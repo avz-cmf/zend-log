@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -14,21 +15,22 @@ use Zend\Log\Formatter\FirePhp;
 
 class FirePhpTest extends TestCase
 {
+
     public function testFormatWithExtraData()
     {
-        $fields = [ 'message' => 'foo',
-                'extra' => new \stdClass() ];
+        $fields = ['message' => 'foo',
+            'context' => new \stdClass()];
 
         $f = new FirePhp();
         list($line, $label) = $f->format($fields);
 
         $this->assertContains($fields['message'], $label);
-        $this->assertEquals($fields['extra'], $line);
+        $this->assertEquals($fields['context'], $line);
     }
 
     public function testFormatWithoutExtra()
     {
-        $fields = [ 'message' => 'foo' ];
+        $fields = ['message' => 'foo'];
 
         $f = new FirePhp();
         list($line, $label) = $f->format($fields);
@@ -39,8 +41,8 @@ class FirePhpTest extends TestCase
 
     public function testFormatWithEmptyExtra()
     {
-        $fields = [ 'message' => 'foo',
-                'extra' => [] ];
+        $fields = ['message' => 'foo',
+            'context' => []];
 
         $f = new FirePhp();
         list($line, $label) = $f->format($fields);
@@ -57,4 +59,5 @@ class FirePhpTest extends TestCase
         $this->assertSame($formatter, $formatter->setDateTimeFormat('r'));
         $this->assertEquals('', $formatter->getDateTimeFormat());
     }
+
 }

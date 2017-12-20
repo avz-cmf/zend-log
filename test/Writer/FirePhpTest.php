@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -14,15 +15,18 @@ use Zend\Log\Logger;
 use Zend\Log\Writer\FirePhp;
 use Zend\Log\Writer\FirePhp\FirePhpInterface;
 use ZendTest\Log\TestAsset\MockFirePhp;
+use Psr\Log\LogLevel;
 
 class FirePhpTest extends TestCase
 {
+
     protected $firephp;
 
     public function setUp()
     {
         $this->firephp = new MockFirePhp();
     }
+
     /**
      * Test get FirePhp
      */
@@ -31,18 +35,20 @@ class FirePhpTest extends TestCase
         $writer = new FirePhp($this->firephp);
         $this->assertInstanceOf('Zend\Log\Writer\FirePhp\FirePhpInterface', $writer->getFirePhp());
     }
+
     /**
      * Test set firephp
      */
     public function testSetFirePhp()
     {
-        $writer   = new FirePhp($this->firephp);
+        $writer = new FirePhp($this->firephp);
         $firephp2 = new MockFirePhp();
 
         $writer->setFirePhp($firephp2);
         $this->assertInstanceOf('Zend\Log\Writer\FirePhp\FirePhpInterface', $writer->getFirePhp());
         $this->assertEquals($firephp2, $writer->getFirePhp());
     }
+
     /**
      * Test write
      */
@@ -51,10 +57,11 @@ class FirePhpTest extends TestCase
         $writer = new FirePhp($this->firephp);
         $writer->write([
             'message' => 'my msg',
-            'priority' => Logger::DEBUG
+            'priority' => LogLevel::DEBUG
         ]);
         $this->assertEquals('my msg', $this->firephp->calls['trace'][0]);
     }
+
     /**
      * Test write with FirePhp disabled
      */
@@ -64,7 +71,7 @@ class FirePhpTest extends TestCase
         $writer = new FirePhp($firephp);
         $writer->write([
             'message' => 'my msg',
-            'priority' => Logger::DEBUG
+            'priority' => LogLevel::DEBUG
         ]);
         $this->assertEmpty($this->firephp->calls);
     }
@@ -72,11 +79,11 @@ class FirePhpTest extends TestCase
     public function testConstructWithOptions()
     {
         $formatter = new \Zend\Log\Formatter\Simple();
-        $filter    = new \Zend\Log\Filter\Mock();
+        $filter = new \Zend\Log\Filter\Mock();
         $writer = new FirePhp([
-                'filters'   => $filter,
-                'formatter' => $formatter,
-                'instance'  => $this->firephp,
+            'filters' => $filter,
+            'formatter' => $formatter,
+            'instance' => $this->firephp,
         ]);
         $this->assertInstanceOf('Zend\Log\Writer\FirePhp\FirePhpInterface', $writer->getFirePhp());
         $this->assertAttributeInstanceOf('Zend\Log\Formatter\FirePhp', 'formatter', $writer);
@@ -96,4 +103,5 @@ class FirePhpTest extends TestCase
     {
         new FirePhp(new \StdClass());
     }
+
 }

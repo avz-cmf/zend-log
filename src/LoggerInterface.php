@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -13,59 +14,60 @@ use Traversable;
 
 interface LoggerInterface
 {
-    /**
-     * @param string $message
-     * @param array|Traversable $extra
-     * @return LoggerInterface
-     */
-    public function emerg($message, $extra = []);
 
     /**
      * @param string $message
-     * @param array|Traversable $extra
+     * @param array|Traversable $context
      * @return LoggerInterface
      */
-    public function alert($message, $extra = []);
+    public function emerg($message, $context = []);
 
     /**
      * @param string $message
-     * @param array|Traversable $extra
+     * @param array|Traversable $context
      * @return LoggerInterface
      */
-    public function crit($message, $extra = []);
+    public function alert($message, $context = []);
 
     /**
      * @param string $message
-     * @param array|Traversable $extra
+     * @param array|Traversable $context
      * @return LoggerInterface
      */
-    public function err($message, $extra = []);
+    public function crit($message, $context = []);
 
     /**
      * @param string $message
-     * @param array|Traversable $extra
+     * @param array|Traversable $context
      * @return LoggerInterface
      */
-    public function warn($message, $extra = []);
+    public function err($message, $context = []);
 
     /**
      * @param string $message
-     * @param array|Traversable $extra
+     * @param array|Traversable $context
      * @return LoggerInterface
      */
-    public function notice($message, $extra = []);
+    public function warn($message, $context = []);
 
     /**
      * @param string $message
-     * @param array|Traversable $extra
+     * @param array|Traversable $context
      * @return LoggerInterface
      */
-    public function info($message, $extra = []);
+    public function notice($message, $context = []);
 
     /**
      * @param string $message
-     * @param array|Traversable $extra
+     * @param array|Traversable $context
      * @return LoggerInterface
      */
-    public function debug($message, $extra = []);
+    public function info($message, $context = []);
+
+    /**
+     * @param string $message
+     * @param array|Traversable $context
+     * @return LoggerInterface
+     */
+    public function debug($message, $context = []);
 }

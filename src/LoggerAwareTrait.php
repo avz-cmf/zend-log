@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -9,8 +10,11 @@
 
 namespace Zend\Log;
 
+use Psr\Log\LoggerInterface as PsrLoggerInterface;
+
 trait LoggerAwareTrait
 {
+
     /**
      * @var LoggerInterface
      */
@@ -22,7 +26,7 @@ trait LoggerAwareTrait
      * @param LoggerInterface $logger
      * @return mixed
      */
-    public function setLogger(LoggerInterface $logger)
+    public function setLogger(PsrLoggerInterface $logger)
     {
         $this->logger = $logger;
 
@@ -38,4 +42,5 @@ trait LoggerAwareTrait
     {
         return $this->logger;
     }
+
 }

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -13,10 +14,11 @@ use Traversable;
 use FirePHP as FirePHPService;
 use Zend\Log\Exception;
 use Zend\Log\Formatter\FirePhp as FirePhpFormatter;
-use Zend\Log\Logger;
+use Psr\Log\LogLevel;
 
 class FirePhp extends AbstractWriter
 {
+
     /**
      * A FirePhpInterface instance that is used to log messages to.
      *
@@ -41,11 +43,11 @@ class FirePhp extends AbstractWriter
             $instance = isset($instance['instance']) ? $instance['instance'] : null;
         }
 
-        if ($instance !== null && ! ($instance instanceof FirePhp\FirePhpInterface)) {
+        if ($instance !== null && !($instance instanceof FirePhp\FirePhpInterface)) {
             throw new Exception\InvalidArgumentException('You must pass a valid FirePhp\FirePhpInterface');
         }
 
-        $this->firephp   = $instance;
+        $this->firephp = $instance;
         $this->formatter = new FirePhpFormatter();
     }
 
@@ -59,27 +61,27 @@ class FirePhp extends AbstractWriter
     {
         $firephp = $this->getFirePhp();
 
-        if (! $firephp->getEnabled()) {
+        if (!$firephp->getEnabled()) {
             return;
         }
 
         list($line, $label) = $this->formatter->format($event);
 
         switch ($event['priority']) {
-            case Logger::EMERG:
-            case Logger::ALERT:
-            case Logger::CRIT:
-            case Logger::ERR:
+            case LogLevel::EMERGENCY:
+            case LogLevel::ALERT:
+            case LogLevel::CRITICAL:
+            case LogLevel::ERROR:
                 $firephp->error($line, $label);
                 break;
-            case Logger::WARN:
+            case LogLevel::WARNING:
                 $firephp->warn($line, $label);
                 break;
-            case Logger::NOTICE:
-            case Logger::INFO:
+            case LogLevel::NOTICE:
+            case LogLevel::INFO:
                 $firephp->info($line, $label);
                 break;
-            case Logger::DEBUG:
+            case LogLevel::DEBUG:
                 $firephp->trace($line);
                 break;
             default:
@@ -96,8 +98,7 @@ class FirePhp extends AbstractWriter
      */
     public function getFirePhp()
     {
-        if (! $this->firephp instanceof FirePhp\FirePhpInterface
-            && ! class_exists('FirePHP')
+        if (!$this->firephp instanceof FirePhp\FirePhpInterface && !class_exists('FirePHP')
         ) {
             // No FirePHP instance, and no way to create one
             throw new Exception\RuntimeException('FirePHP Class not found');
@@ -105,8 +106,7 @@ class FirePhp extends AbstractWriter
 
         // Remember: class names in strings are absolute; thus the class_exists
         // here references the canonical name for the FirePHP class
-        if (! $this->firephp instanceof FirePhp\FirePhpInterface
-            && class_exists('FirePHP')
+        if (!$this->firephp instanceof FirePhp\FirePhpInterface && class_exists('FirePHP')
         ) {
             // FirePHPService is an alias for FirePHP; otherwise the class
             // names would clash in this file on this line.
@@ -128,4 +128,5 @@ class FirePhp extends AbstractWriter
 
         return $this;
     }
+
 }

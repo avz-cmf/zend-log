@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -13,9 +14,11 @@ use PHPUnit\Framework\TestCase;
 use ZendTest\Log\TestAsset\MockChromePhp;
 use Zend\Log\Writer\ChromePhp;
 use Zend\Log\Logger;
+use Psr\Log\LogLevel;
 
 class ChromePhpTest extends TestCase
 {
+
     protected $chromephp;
 
     public function setUp()
@@ -31,7 +34,7 @@ class ChromePhpTest extends TestCase
 
     public function testSetChromePhp()
     {
-        $writer   = new ChromePhp($this->chromephp);
+        $writer = new ChromePhp($this->chromephp);
         $chromephp2 = new MockChromePhp();
 
         $writer->setChromePhp($chromephp2);
@@ -44,7 +47,7 @@ class ChromePhpTest extends TestCase
         $writer = new ChromePhp($this->chromephp);
         $writer->write([
             'message' => 'my msg',
-            'priority' => Logger::DEBUG
+            'priority' => LogLevel::DEBUG
         ]);
         $this->assertEquals('my msg', $this->chromephp->calls['trace'][0]);
     }
@@ -55,7 +58,7 @@ class ChromePhpTest extends TestCase
         $writer = new ChromePhp($chromephp);
         $writer->write([
             'message' => 'my msg',
-            'priority' => Logger::DEBUG
+            'priority' => LogLevel::DEBUG
         ]);
         $this->assertEmpty($this->chromephp->calls);
     }
@@ -63,11 +66,11 @@ class ChromePhpTest extends TestCase
     public function testConstructWithOptions()
     {
         $formatter = new \Zend\Log\Formatter\Simple();
-        $filter    = new \Zend\Log\Filter\Mock();
+        $filter = new \Zend\Log\Filter\Mock();
         $writer = new ChromePhp([
-            'filters'   => $filter,
+            'filters' => $filter,
             'formatter' => $formatter,
-            'instance'  => $this->chromephp,
+            'instance' => $this->chromephp,
         ]);
         $this->assertInstanceOf('Zend\Log\Writer\ChromePhp\ChromePhpInterface', $writer->getChromePhp());
         $this->assertAttributeInstanceOf('Zend\Log\Formatter\ChromePhp', 'formatter', $writer);
@@ -76,4 +79,5 @@ class ChromePhpTest extends TestCase
         $this->assertCount(1, $filters);
         $this->assertEquals($filter, $filters[0]);
     }
+
 }

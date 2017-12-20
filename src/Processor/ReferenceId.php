@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -11,6 +12,7 @@ namespace Zend\Log\Processor;
 
 class ReferenceId extends RequestId implements ProcessorInterface
 {
+
     /**
      * Adds an identifier for the request to the log.
      *
@@ -21,15 +23,15 @@ class ReferenceId extends RequestId implements ProcessorInterface
      */
     public function process(array $event)
     {
-        if (isset($event['extra']['referenceId'])) {
+        if (isset($event['context']['referenceId'])) {
             return $event;
         }
 
-        if (! isset($event['extra'])) {
-            $event['extra'] = [];
+        if (!isset($event['context'])) {
+            $event['context'] = [];
         }
 
-        $event['extra']['referenceId'] = $this->getIdentifier();
+        $event['context']['referenceId'] = $this->getIdentifier();
 
         return $event;
     }
@@ -56,4 +58,5 @@ class ReferenceId extends RequestId implements ProcessorInterface
     {
         return $this->getIdentifier();
     }
+
 }

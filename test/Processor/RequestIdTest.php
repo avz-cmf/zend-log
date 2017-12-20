@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -14,25 +15,26 @@ use Zend\Log\Processor\RequestId;
 
 class RequestIdTest extends TestCase
 {
+
     public function testProcess()
     {
         $processor = new RequestId();
 
         $event = [
-            'timestamp'    => '',
-            'priority'     => 1,
+            'timestamp' => '',
+            'priority' => 1,
             'priorityName' => 'ALERT',
-            'message'      => 'foo',
-            'extra'        => [],
+            'message' => 'foo',
+            'context' => [],
         ];
 
         $eventA = $processor->process($event);
-        $this->assertArrayHasKey('requestId', $eventA['extra']);
+        $this->assertArrayHasKey('requestId', $eventA['context']);
 
         $eventB = $processor->process($event);
-        $this->assertArrayHasKey('requestId', $eventB['extra']);
+        $this->assertArrayHasKey('requestId', $eventB['context']);
 
-        $this->assertEquals($eventA['extra']['requestId'], $eventB['extra']['requestId']);
+        $this->assertEquals($eventA['context']['requestId'], $eventB['context']['requestId']);
     }
 
     public function testProcessDoesNotOverwriteExistingRequestId()
@@ -42,18 +44,19 @@ class RequestIdTest extends TestCase
         $requestId = 'bar';
 
         $event = [
-            'timestamp'    => '',
-            'priority'     => 1,
+            'timestamp' => '',
+            'priority' => 1,
             'priorityName' => 'ALERT',
-            'message'      => 'foo',
-            'extra'        => [
+            'message' => 'foo',
+            'context' => [
                 'requestId' => $requestId,
             ],
         ];
 
         $processedEvent = $processor->process($event);
 
-        $this->assertArrayHasKey('requestId', $processedEvent['extra']);
-        $this->assertSame($requestId, $processedEvent['extra']['requestId']);
+        $this->assertArrayHasKey('requestId', $processedEvent['context']);
+        $this->assertSame($requestId, $processedEvent['context']['requestId']);
     }
+
 }

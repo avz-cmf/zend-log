@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -17,19 +18,20 @@ use ZendTest\Log\TestAsset\NotStringObject;
 
 class ErrorHandlerTest extends TestCase
 {
+
     public function testFormat()
     {
         $date = new DateTime();
 
         $event = [
-            'timestamp'    => $date,
-            'message'      => 'test',
-            'priority'     => 1,
+            'timestamp' => $date,
+            'message' => 'test',
+            'priority' => 1,
             'priorityName' => 'CRIT',
-            'extra' => [
+            'context' => [
                 'errno' => 1,
-                'file'  => 'test.php',
-                'line'  => 1,
+                'file' => 'test.php',
+                'line' => 1,
                 'context' => ['object' => new DateTime(), 'string' => 'test']
             ]
         ];
@@ -53,31 +55,31 @@ class ErrorHandlerTest extends TestCase
         $date = new DateTime();
         $stringObject = new StringObject();
         $event = [
-                'timestamp' => $date,
-                'message' => 'test',
-                'priority' => 1,
-                'priorityName' => 'CRIT',
-                'extra' => [
-                        'errno' => 1,
-                        'file' => 'test.php',
-                        'line' => 1,
-                        'context' => [
-                                'object1' => new StringObject(),
-                                'object2' => new NotStringObject(),
-                                'string' => 'test1',
-                                'array' => [
-                                        'key' => 'test2'
-                                ]
-                        ]
+            'timestamp' => $date,
+            'message' => 'test',
+            'priority' => 1,
+            'priorityName' => 'CRIT',
+            'context' => [
+                'errno' => 1,
+                'file' => 'test.php',
+                'line' => 1,
+                'context' => [
+                    'object1' => new StringObject(),
+                    'object2' => new NotStringObject(),
+                    'string' => 'test1',
+                    'array' => [
+                        'key' => 'test2'
+                    ]
                 ]
+            ]
         ];
-        $formatString = '%extra[context][object1]% %extra[context][object2]% %extra[context][string]% '
-            .'%extra[context][array]% %extra[context][array][key]%';
+        $formatString = '%context[context][object1]% %context[context][object2]% %context[context][string]% '
+                . '%context[context][array]% %context[context][array][key]%';
         $formatter = new ErrorHandler($formatString);
         $output = $formatter->format($event);
         $this->assertEquals(
-            $stringObject->__toString() .' %extra[context][object2]% test1 %extra[context][array]% test2',
-            $output
+                $stringObject->__toString() . ' %context[context][object2]% test1 %context[context][array]% test2', $output
         );
     }
+
 }

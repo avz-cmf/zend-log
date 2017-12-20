@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -16,6 +17,7 @@ use ZendTest\Log\TestAsset\SerializableObject;
 
 class XmlTest extends TestCase
 {
+
     public function testDefaultFormat()
     {
         $date = new DateTime();
@@ -24,7 +26,7 @@ class XmlTest extends TestCase
 
         $this->assertContains($date->format('c'), $line);
         $this->assertContains('foo', $line);
-        $this->assertContains((string)42, $line);
+        $this->assertContains((string) 42, $line);
     }
 
     public function testConfiguringElementMapping()
@@ -124,8 +126,7 @@ class XmlTest extends TestCase
             'priority' => 4
         ];
         $expected = sprintf(
-            '<log><date>%s</date><word>tottakai</word><priority>4</priority></log>',
-            $date->format('r')
+                '<log><date>%s</date><word>tottakai</word><priority>4</priority></log>', $date->format('r')
         );
 
         $formatter = new XmlFormatter($options);
@@ -145,7 +146,7 @@ class XmlTest extends TestCase
         $event = [
             'message' => 'tottakai',
             'priority' => 4,
-            'context' => ['test' => 'one'],
+            'extra' => ['test' => 'one'],
             'reference' => new XmlFormatter()
         ];
         $expected = '<log><message>tottakai</message><priority>4</priority></log>';
@@ -166,11 +167,11 @@ class XmlTest extends TestCase
         $event = [
             'message' => 'tottakai',
             'priority' => 4,
-            'context' => ['test' => 'one'],
+            'extra' => ['test' => 'one'],
             'reference' => new SerializableObject()
         ];
         $expected = '<log><message>tottakai</message><priority>4</priority><reference>'
-            .'ZendTest\Log\TestAsset\SerializableObject</reference></log>';
+                . 'ZendTest\Log\TestAsset\SerializableObject</reference></log>';
 
         $formatter = new XmlFormatter($options);
         $output = $formatter->format($event);
@@ -185,14 +186,14 @@ class XmlTest extends TestCase
         $formatter = new XmlFormatter;
         $d = new DateTime('2001-01-01T12:00:00-06:00');
         $event = [
-            'timestamp'    => $d,
-            'message'      => 'test',
-            'priority'     => 1,
+            'timestamp' => $d,
+            'message' => 'test',
+            'priority' => 1,
             'priorityName' => 'CRIT',
-            'extra'        => []
+            'context' => []
         ];
         $expected = '<logEntry><timestamp>2001-01-01T12:00:00-06:00</timestamp><message>test</message>'
-            .'<priority>1</priority><priorityName>CRIT</priorityName></logEntry>';
+                . '<priority>1</priority><priorityName>CRIT</priorityName></logEntry>';
         $expected .= "\n" . PHP_EOL;
         $this->assertEquals($expected, $formatter->format($event));
     }
@@ -202,20 +203,20 @@ class XmlTest extends TestCase
         $formatter = new XmlFormatter;
         $d = new DateTime('2001-01-01T12:00:00-06:00');
         $event = [
-            'timestamp'    => $d,
-            'message'      => 'test',
-            'priority'     => 1,
+            'timestamp' => $d,
+            'message' => 'test',
+            'priority' => 1,
             'priorityName' => 'CRIT',
-            'extra'        => [
+            'context' => [
                 'test' => 'one',
-                'bar'  => 'foo',
+                'bar' => 'foo',
                 'wrong message' => 'dasdasd'
             ]
         ];
 
         $expected = '<logEntry><timestamp>2001-01-01T12:00:00-06:00</timestamp><message>test</message>'
-            .'<priority>1</priority><priorityName>CRIT</priorityName><extra><test>one</test>'
-            .'<bar>foo</bar></extra></logEntry>';
+                . '<priority>1</priority><priorityName>CRIT</priorityName><context><test>one</test>'
+                . '<bar>foo</bar></context></logEntry>';
         $expected .= "\n" . PHP_EOL;
         $this->assertEquals($expected, $formatter->format($event));
     }
@@ -227,38 +228,38 @@ class XmlTest extends TestCase
         $d = new DateTime('2001-01-01T12:00:00-06:00');
 
         $event = [
-            'timestamp'    => $d,
-            'message'      => 'test',
-            'priority'     => 1,
+            'timestamp' => $d,
+            'message' => 'test',
+            'priority' => 1,
             'priorityName' => 'CRIT',
-            'extra'        => [
-                'test'  => [
+            'context' => [
+                'test' => [
                     'one',
                     'two' => [
                         'three' => [
                             'four' => 'four'
                         ],
-                        'five'  => ['']
+                        'five' => ['']
                     ]
                 ],
-                '1111'                => '2222',
-                'test_null'           => null,
-                'test_int'            => 14,
-                'test_object'         => new \stdClass(),
+                '1111' => '2222',
+                'test_null' => null,
+                'test_int' => 14,
+                'test_object' => new \stdClass(),
                 new SerializableObject(),
                 'serializable_object' => new SerializableObject(),
                 null,
-                'test_empty_array'    => [],
-                'bar'                 => 'foo',
+                'test_empty_array' => [],
+                'bar' => 'foo',
                 'foobar'
             ]
         ];
         $expected = '<logEntry><timestamp>2001-01-01T12:00:00-06:00</timestamp><message>test</message>'
-            .'<priority>1</priority><priorityName>CRIT</priorityName><extra><test><one/><two><three><four>four</four>'
-            .'</three><five/></two></test><test_null/><test_int>14</test_int><test_object>'
-            .'"Object" of type stdClass does not support __toString() method</test_object><serializable_object>'
-            .'ZendTest\Log\TestAsset\SerializableObject</serializable_object><test_empty_array/>'
-            .'<bar>foo</bar><foobar/></extra></logEntry>';
+                . '<priority>1</priority><priorityName>CRIT</priorityName><context><test><one/><two><three><four>four</four>'
+                . '</three><five/></two></test><test_null/><test_int>14</test_int><test_object>'
+                . '"Object" of type stdClass does not support __toString() method</test_object><serializable_object>'
+                . 'ZendTest\Log\TestAsset\SerializableObject</serializable_object><test_empty_array/>'
+                . '<bar>foo</bar><foobar/></context></logEntry>';
         $expected .= "\n" . PHP_EOL;
         $this->assertEquals($expected, $formatter->format($event));
     }
@@ -270,38 +271,39 @@ class XmlTest extends TestCase
         $d = new DateTime('2001-01-01T12:00:00-06:00');
 
         $event = [
-            'timestamp'    => $d,
-            'message'      => 'test',
-            'priority'     => 1,
+            'timestamp' => $d,
+            'message' => 'test',
+            'priority' => 1,
             'priorityName' => 'CRIT',
-            'extra'        => [
-                'test'  => [
+            'context' => [
+                'test' => [
                     'one',
                     'two' => [
                         'three' => [
                             'four' => 'four&four'
                         ],
-                        'five'  => ['']
+                        'five' => ['']
                     ]
                 ],
-                '1111'                => '2222',
-                'test_null'           => null,
-                'test_int'            => 14,
-                'test_object'         => new \stdClass(),
+                '1111' => '2222',
+                'test_null' => null,
+                'test_int' => 14,
+                'test_object' => new \stdClass(),
                 new SerializableObject(),
                 'serializable_object' => new SerializableObject(),
                 null,
-                'test_empty_array'    => [],
-                'bar'                 => 'foo',
+                'test_empty_array' => [],
+                'bar' => 'foo',
                 'foobar'
             ]
         ];
 
         // @codingStandardsIgnoreStart
-        $expected = '<logEntry><timestamp>2001-01-01T12:00:00-06:00</timestamp><message>test</message><priority>1</priority><priorityName>CRIT</priorityName><extra><test><one/><two><three><four>four&amp;four</four></three><five/></two></test><test_null/><test_int>14</test_int><test_object>"Object" of type stdClass does not support __toString() method</test_object><serializable_object>ZendTest\Log\TestAsset\SerializableObject</serializable_object><test_empty_array/><bar>foo</bar><foobar/></extra></logEntry>';
+        $expected = '<logEntry><timestamp>2001-01-01T12:00:00-06:00</timestamp><message>test</message><priority>1</priority><priorityName>CRIT</priorityName><context><test><one/><two><three><four>four&amp;four</four></three><five/></two></test><test_null/><test_int>14</test_int><test_object>"Object" of type stdClass does not support __toString() method</test_object><serializable_object>ZendTest\Log\TestAsset\SerializableObject</serializable_object><test_empty_array/><bar>foo</bar><foobar/></context></logEntry>';
         $expected .= "\n" . PHP_EOL;
         // @codingStandardsIgnoreEnd
 
         $this->assertEquals($expected, $formatter->format($event));
     }
+
 }

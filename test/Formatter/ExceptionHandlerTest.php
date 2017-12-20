@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -15,34 +16,35 @@ use Zend\Log\Formatter\ExceptionHandler;
 
 class ExceptionHandlerTest extends TestCase
 {
+
     public function testFormat()
     {
         $date = new DateTime();
 
         $event = [
-            'timestamp'    => $date,
-            'message'      => 'test',
-            'priority'     => 1,
+            'timestamp' => $date,
+            'message' => 'test',
+            'priority' => 1,
             'priorityName' => 'CRIT',
-            'extra' => [
-                'file'  => 'test.php',
-                'line'  => 1,
+            'context' => [
+                'file' => 'test.php',
+                'line' => 1,
                 'trace' => [
                     [
-                        'file'     => 'test.php',
-                        'line'     => 1,
+                        'file' => 'test.php',
+                        'line' => 1,
                         'function' => 'test',
-                        'class'    => 'Test',
-                        'type'     => '::',
-                        'args'     => [1]
+                        'class' => 'Test',
+                        'type' => '::',
+                        'args' => [1]
                     ],
                     [
-                        'file'     => 'test.php',
-                        'line'     => 2,
+                        'file' => 'test.php',
+                        'line' => 2,
                         'function' => 'test',
-                        'class'    => 'Test',
-                        'type'     => '::',
-                        'args'     => [1]
+                        'class' => 'Test',
+                        'type' => '::',
+                        'args' => [1]
                     ]
                 ]
             ]
@@ -85,13 +87,13 @@ class ExceptionHandlerTest extends TestCase
         $date = new DateTime();
 
         $event = [
-            'timestamp'    => $date,
-            'message'      => 'test',
-            'priority'     => 1,
+            'timestamp' => $date,
+            'message' => 'test',
+            'priority' => 1,
             'priorityName' => 'CRIT',
-            'extra' => [
-                'file'  => 'test.php',
-                'line'  => 1,
+            'context' => [
+                'file' => 'test.php',
+                'line' => 1,
             ],
         ];
 
@@ -111,4 +113,5 @@ class ExceptionHandlerTest extends TestCase
             ['U'],
         ];
     }
+
 }

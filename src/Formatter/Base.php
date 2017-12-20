@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -14,6 +15,7 @@ use Traversable;
 
 class Base implements FormatterInterface
 {
+
     /**
      * Format specifier for DateTime objects in event data (default: ISO 8601)
      *
@@ -52,8 +54,8 @@ class Base implements FormatterInterface
     public function format($event)
     {
         foreach ($event as $key => $value) {
-            // Keep extra as an array
-            if ('extra' === $key && is_array($value)) {
+            // Keep context as an array
+            if ('context' === $key && is_array($value)) {
                 $event[$key] = self::format($value);
             } else {
                 $event[$key] = $this->normalize($value);
@@ -94,11 +96,11 @@ class Base implements FormatterInterface
             $value = @json_encode(iterator_to_array($value), $jsonFlags);
         } elseif (is_array($value)) {
             $value = @json_encode($value, $jsonFlags);
-        } elseif (is_object($value) && ! method_exists($value, '__toString')) {
+        } elseif (is_object($value) && !method_exists($value, '__toString')) {
             $value = sprintf('object(%s) %s', get_class($value), @json_encode($value));
         } elseif (is_resource($value)) {
             $value = sprintf('resource(%s)', get_resource_type($value));
-        } elseif (! is_object($value)) {
+        } elseif (!is_object($value)) {
             $value = gettype($value);
         }
 
@@ -121,4 +123,5 @@ class Base implements FormatterInterface
         $this->dateTimeFormat = (string) $dateTimeFormat;
         return $this;
     }
+
 }

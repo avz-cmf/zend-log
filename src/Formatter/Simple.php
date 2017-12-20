@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -14,7 +15,8 @@ use Zend\Log\Exception;
 
 class Simple extends Base
 {
-    const DEFAULT_FORMAT = '%timestamp% %priorityName% (%priority%): %message% %extra%';
+
+    const DEFAULT_FORMAT = '%timestamp% %priorityName% (%priority%): %message% %context%';
 
     /**
      * Format specifier for log messages
@@ -39,10 +41,10 @@ class Simple extends Base
 
         if (is_array($format)) {
             $dateTimeFormat = isset($format['dateTimeFormat']) ? $format['dateTimeFormat'] : null;
-            $format         = isset($format['format']) ? $format['format'] : null;
+            $format = isset($format['format']) ? $format['format'] : null;
         }
 
-        if (isset($format) && ! is_string($format)) {
+        if (isset($format) && !is_string($format)) {
             throw new Exception\InvalidArgumentException('Format must be a string');
         }
 
@@ -63,20 +65,20 @@ class Simple extends Base
 
         $event = parent::format($event);
         foreach ($event as $name => $value) {
-            if ('extra' == $name && count($value)) {
+            if ('context' == $name && count($value)) {
                 $value = $this->normalize($value);
-            } elseif ('extra' == $name) {
+            } elseif ('context' == $name) {
                 // Don't print an empty array
                 $value = '';
             }
             $output = str_replace("%$name%", $value, $output);
         }
 
-        if (isset($event['extra']) && empty($event['extra'])
-            && false !== strpos($this->format, '%extra%')
+        if (isset($event['context']) && empty($event['context']) && false !== strpos($this->format, '%context%')
         ) {
             $output = rtrim($output, ' ');
         }
         return $output;
     }
+
 }

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -16,6 +17,7 @@ use Zend\Log\Formatter\Simple;
 
 class SimpleTest extends TestCase
 {
+
     public function testConstructorThrowsOnBadFormatString()
     {
         $this->expectException('Zend\Log\Exception\InvalidArgumentException');
@@ -39,11 +41,11 @@ class SimpleTest extends TestCase
     {
         $date = new DateTime('2012-08-28T18:15:00Z');
         $fields = [
-            'timestamp'    => $date,
-            'message'      => 'foo',
-            'priority'     => 42,
+            'timestamp' => $date,
+            'message' => 'foo',
+            'priority' => 42,
             'priorityName' => 'bar',
-            'extra'        => []
+            'context' => []
         ];
 
         $outputExpected = '2012-08-28T18:15:00+00:00 bar (42): foo';
@@ -94,11 +96,11 @@ class SimpleTest extends TestCase
         $message = 'custom message';
         $exception = new RuntimeException($message);
         $event = [
-            'timestamp'    => new DateTime(),
-            'message'      => 'Application error',
-            'priority'     => 2,
+            'timestamp' => new DateTime(),
+            'message' => 'Application error',
+            'priority' => 2,
             'priorityName' => 'CRIT',
-            'extra'        => [$exception],
+            'context' => [$exception],
         ];
 
         $formatter = new Simple();
@@ -113,4 +115,5 @@ class SimpleTest extends TestCase
         $formatter = new Simple($format);
         $this->assertEquals($format, $formatter->format([]));
     }
+
 }

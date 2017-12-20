@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -14,47 +15,48 @@ use Zend\Log\Processor\ReferenceId;
 
 class ReferenceIdTest extends TestCase
 {
+
     public function testProcessMixesInReferenceId()
     {
-        $processor      = new ReferenceId();
+        $processor = new ReferenceId();
         $processedEvent = $processor->process([
-            'timestamp'    => '',
-            'priority'     => 1,
+            'timestamp' => '',
+            'priority' => 1,
             'priorityName' => 'ALERT',
-            'message'      => 'foo',
+            'message' => 'foo',
         ]);
 
-        $this->assertArrayHasKey('extra', $processedEvent);
-        $this->assertInternalType('array', $processedEvent['extra']);
-        $this->assertArrayHasKey('referenceId', $processedEvent['extra']);
+        $this->assertArrayHasKey('context', $processedEvent);
+        $this->assertInternalType('array', $processedEvent['context']);
+        $this->assertArrayHasKey('referenceId', $processedEvent['context']);
 
-        $this->assertNotNull($processedEvent['extra']['referenceId']);
+        $this->assertNotNull($processedEvent['context']['referenceId']);
     }
 
     public function testProcessDoesNotOverwriteReferenceId()
     {
-        $processor      = new ReferenceId();
-        $referenceId    = 'bar';
+        $processor = new ReferenceId();
+        $referenceId = 'bar';
         $processedEvent = $processor->process([
-            'timestamp'    => '',
-            'priority'     => 1,
+            'timestamp' => '',
+            'priority' => 1,
             'priorityName' => 'ALERT',
-            'message'      => 'foo',
-            'extra'        => [
+            'message' => 'foo',
+            'context' => [
                 'referenceId' => $referenceId,
             ],
         ]);
 
-        $this->assertArrayHasKey('extra', $processedEvent);
-        $this->assertInternalType('array', $processedEvent['extra']);
-        $this->assertArrayHasKey('referenceId', $processedEvent['extra']);
+        $this->assertArrayHasKey('context', $processedEvent);
+        $this->assertInternalType('array', $processedEvent['context']);
+        $this->assertArrayHasKey('referenceId', $processedEvent['context']);
 
-        $this->assertSame($referenceId, $processedEvent['extra']['referenceId']);
+        $this->assertSame($referenceId, $processedEvent['context']['referenceId']);
     }
 
     public function testCanSetAndGetReferenceId()
     {
-        $processor   = new ReferenceId();
+        $processor = new ReferenceId();
         $referenceId = 'foo';
 
         $processor->setReferenceId($referenceId);
@@ -65,21 +67,22 @@ class ReferenceIdTest extends TestCase
     public function testProcessUsesSetReferenceId()
     {
         $referenceId = 'foo';
-        $processor   = new ReferenceId();
+        $processor = new ReferenceId();
 
         $processor->setReferenceId($referenceId);
 
         $processedEvent = $processor->process([
-            'timestamp'    => '',
-            'priority'     => 1,
+            'timestamp' => '',
+            'priority' => 1,
             'priorityName' => 'ALERT',
-            'message'      => 'foo',
+            'message' => 'foo',
         ]);
 
-        $this->assertArrayHasKey('extra', $processedEvent);
-        $this->assertInternalType('array', $processedEvent['extra']);
-        $this->assertArrayHasKey('referenceId', $processedEvent['extra']);
+        $this->assertArrayHasKey('context', $processedEvent);
+        $this->assertInternalType('array', $processedEvent['context']);
+        $this->assertArrayHasKey('referenceId', $processedEvent['context']);
 
-        $this->assertSame($referenceId, $processedEvent['extra']['referenceId']);
+        $this->assertSame($referenceId, $processedEvent['context']['referenceId']);
     }
+
 }

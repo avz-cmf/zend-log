@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -11,17 +12,18 @@ namespace Zend\Log\Formatter;
 
 class FirePhp implements FormatterInterface
 {
+
     /**
      * Formats the given event data into a single line to be written by the writer.
      *
      * @param  array $event The event data which should be formatted.
-     * @return array line message and optionally label if 'extra' data exists.
+     * @return array line message and optionally label if 'context' data exists.
      */
     public function format($event)
     {
         $label = null;
-        if (! empty($event['extra'])) {
-            $line  = $event['extra'];
+        if (!empty($event['context'])) {
+            $line = $event['context'];
             $label = $event['message'];
         } else {
             $line = $event['message'];
@@ -50,4 +52,5 @@ class FirePhp implements FormatterInterface
     {
         return $this;
     }
+
 }

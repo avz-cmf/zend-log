@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -13,26 +14,28 @@ use Traversable;
 use Zend\Log\Exception;
 use Zend\Log\Formatter\Simple as SimpleFormatter;
 use Zend\Log\Logger;
+use Psr\Log\LogLevel;
 
 /**
  * Writes log messages to syslog
  */
 class Syslog extends AbstractWriter
 {
+
     /**
      * Maps Zend\Log priorities to PHP's syslog priorities
      *
      * @var array
      */
     protected $priorities = [
-        Logger::EMERG  => LOG_EMERG,
-        Logger::ALERT  => LOG_ALERT,
-        Logger::CRIT   => LOG_CRIT,
-        Logger::ERR    => LOG_ERR,
-        Logger::WARN   => LOG_WARNING,
-        Logger::NOTICE => LOG_NOTICE,
-        Logger::INFO   => LOG_INFO,
-        Logger::DEBUG  => LOG_DEBUG,
+        LogLevel::EMERGENCY => LOG_EMERG,
+        LogLevel::ALERT => LOG_ALERT,
+        LogLevel::CRITICAL => LOG_CRIT,
+        LogLevel::ERROR => LOG_ERR,
+        LogLevel::WARNING => LOG_WARNING,
+        LogLevel::NOTICE => LOG_NOTICE,
+        LogLevel::INFO => LOG_INFO,
+        LogLevel::DEBUG => LOG_DEBUG,
     ];
 
     /**
@@ -157,7 +160,7 @@ class Syslog extends AbstractWriter
     protected function initializeSyslog()
     {
         static::$lastApplication = $this->appName;
-        static::$lastFacility    = $this->facility;
+        static::$lastFacility = $this->facility;
         openlog($this->appName, LOG_PID, $this->facility);
     }
 
@@ -174,21 +177,20 @@ class Syslog extends AbstractWriter
             return $this;
         }
 
-        if (! count($this->validFacilities)) {
+        if (!count($this->validFacilities)) {
             $this->initializeValidFacilities();
         }
 
-        if (! in_array($facility, $this->validFacilities)) {
+        if (!in_array($facility, $this->validFacilities)) {
             throw new Exception\InvalidArgumentException(
-                'Invalid log facility provided; please see http://php.net/openlog for a list of valid facility values'
+            'Invalid log facility provided; please see http://php.net/openlog for a list of valid facility values'
             );
         }
 
-        if ('WIN' == strtoupper(substr(PHP_OS, 0, 3))
-            && ($facility !== LOG_USER)
+        if ('WIN' == strtoupper(substr(PHP_OS, 0, 3)) && ($facility !== LOG_USER)
         ) {
             throw new Exception\InvalidArgumentException(
-                'Only LOG_USER is a valid log facility on Windows'
+            'Only LOG_USER is a valid log facility on Windows'
             );
         }
 
@@ -238,8 +240,7 @@ class Syslog extends AbstractWriter
             $priority = $this->defaultPriority;
         }
 
-        if ($this->appName !== static::$lastApplication
-            || $this->facility !== static::$lastFacility
+        if ($this->appName !== static::$lastApplication || $this->facility !== static::$lastFacility
         ) {
             $this->initializeSyslog();
         }
@@ -248,4 +249,5 @@ class Syslog extends AbstractWriter
 
         syslog($priority, $message);
     }
+
 }

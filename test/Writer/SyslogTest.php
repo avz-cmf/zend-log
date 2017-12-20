@@ -15,6 +15,7 @@ use Zend\Log\Writer\Syslog as SyslogWriter;
 use Zend\Log\Logger;
 use Zend\Log\Formatter\Simple as SimpleFormatter;
 use ZendTest\Log\TestAsset\CustomSyslogWriter;
+use Psr\Log\LogLevel;
 
 class SyslogTest extends TestCase
 {
@@ -83,7 +84,7 @@ class SyslogTest extends TestCase
     {
         $event = [
             'message' => 'tottakai',
-            'priority' => Logger::ERR
+            'priority' => LogLevel::ERROR
         ];
 
         $writer = new SyslogWriter();

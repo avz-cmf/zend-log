@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -15,9 +16,11 @@ use Zend\Log\Writer\ChromePhp\ChromePhpInterface;
 use Zend\Log\Formatter\ChromePhp as ChromePhpFormatter;
 use Zend\Log\Logger;
 use Zend\Log\Exception;
+use Psr\Log\LogLevel;
 
 class ChromePhp extends AbstractWriter
 {
+
     /**
      * The instance of ChromePhpInterface that is used to log messages to.
      *
@@ -42,9 +45,9 @@ class ChromePhp extends AbstractWriter
             $instance = isset($instance['instance']) ? $instance['instance'] : null;
         }
 
-        if (! ($instance instanceof ChromePhpInterface || $instance === null)) {
+        if (!($instance instanceof ChromePhpInterface || $instance === null)) {
             throw new Exception\InvalidArgumentException(
-                'You must pass a valid Zend\Log\Writer\ChromePhp\ChromePhpInterface'
+            'You must pass a valid Zend\Log\Writer\ChromePhp\ChromePhpInterface'
             );
         }
 
@@ -63,20 +66,20 @@ class ChromePhp extends AbstractWriter
         $line = $this->formatter->format($event);
 
         switch ($event['priority']) {
-            case Logger::EMERG:
-            case Logger::ALERT:
-            case Logger::CRIT:
-            case Logger::ERR:
+            case LogLevel::EMERGENCY:
+            case LogLevel::ALERT:
+            case LogLevel::CRITICAL:
+            case LogLevel::ERROR:
                 $this->chromephp->error($line);
                 break;
-            case Logger::WARN:
+            case LogLevel::WARNING:
                 $this->chromephp->warn($line);
                 break;
-            case Logger::NOTICE:
-            case Logger::INFO:
+            case LogLevel::NOTICE:
+            case LogLevel::INFO:
                 $this->chromephp->info($line);
                 break;
-            case Logger::DEBUG:
+            case LogLevel::DEBUG:
                 $this->chromephp->trace($line);
                 break;
             default:
@@ -94,8 +97,7 @@ class ChromePhp extends AbstractWriter
     {
         // Remember: class names in strings are absolute; thus the class_exists
         // here references the canonical name for the ChromePhp class
-        if (! $this->chromephp instanceof ChromePhpInterface
-            && class_exists('ChromePhp')
+        if (!$this->chromephp instanceof ChromePhpInterface && class_exists('ChromePhp')
         ) {
             $this->setChromePhp(new ChromePhpBridge());
         }
@@ -113,4 +115,5 @@ class ChromePhp extends AbstractWriter
         $this->chromephp = $instance;
         return $this;
     }
+
 }

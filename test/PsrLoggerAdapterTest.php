@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -21,18 +22,19 @@ use Zend\Log\Writer\Mock as MockWriter;
  */
 class PsrLoggerAdapterTest extends LoggerInterfaceTest
 {
+
     /**
      * @var array
      */
     protected $psrPriorityMap = [
-        LogLevel::EMERGENCY => Logger::EMERG,
-        LogLevel::ALERT     => Logger::ALERT,
-        LogLevel::CRITICAL  => Logger::CRIT,
-        LogLevel::ERROR     => Logger::ERR,
-        LogLevel::WARNING   => Logger::WARN,
-        LogLevel::NOTICE    => Logger::NOTICE,
-        LogLevel::INFO      => Logger::INFO,
-        LogLevel::DEBUG     => Logger::DEBUG,
+        LogLevel::EMERGENCY,
+        LogLevel::ALERT,
+        LogLevel::CRITICAL,
+        LogLevel::ERROR,
+        LogLevel::WARNING,
+        LogLevel::NOTICE,
+        LogLevel::INFO,
+        LogLevel::DEBUG,
     ];
 
     /**
@@ -43,7 +45,7 @@ class PsrLoggerAdapterTest extends LoggerInterfaceTest
     public function getLogger()
     {
         $this->mockWriter = new MockWriter;
-        $logger           = new Logger;
+        $logger = new Logger;
         $logger->addProcessor('psrplaceholder');
         $logger->addWriter($this->mockWriter);
         return new PsrLoggerAdapter($logger);
@@ -60,9 +62,8 @@ class PsrLoggerAdapterTest extends LoggerInterfaceTest
      */
     public function getLogs()
     {
-        $prefixMap = array_flip($this->psrPriorityMap);
         return array_map(function ($event) use ($prefixMap) {
-            $prefix  = $prefixMap[$event['priority']];
+            $prefix = $event['level'];
             $message = $prefix . ' ' . $event['message'];
             return $message;
         }, $this->mockWriter->events);
@@ -92,21 +93,19 @@ class PsrLoggerAdapterTest extends LoggerInterfaceTest
      * @covers ::log
      * @dataProvider logLevelsToPriorityProvider
      */
-    public function testPsrLogLevelsMapsToPriorities($logLevel, $priority)
+    public function testPsrLogLevelsMapsToPriorities($logLevel)
     {
         $message = 'foo';
         $context = ['bar' => 'baz'];
 
         $logger = $this->getMockBuilder(Logger::class)
-            ->setMethods(['log'])
-            ->getMock();
+                ->setMethods(['log'])
+                ->getMock();
         $logger->expects($this->once())
-            ->method('log')
-            ->with(
-                $this->equalTo($priority),
-                $this->equalTo($message),
-                $this->equalTo($context)
-            );
+                ->method('log')
+                ->with(
+                        $this->equalTo($logLevel), $this->equalTo($message), $this->equalTo($context)
+        );
 
         $adapter = new PsrLoggerAdapter($logger);
         $adapter->log($logLevel, $message, $context);
@@ -120,9 +119,10 @@ class PsrLoggerAdapterTest extends LoggerInterfaceTest
     public function logLevelsToPriorityProvider()
     {
         $return = [];
-        foreach ($this->psrPriorityMap as $level => $priority) {
-            $return[] = [$level, $priority];
+        foreach ($this->psrPriorityMap as $level) {
+            $return[] = [$level];
         }
         return $return;
     }
+
 }

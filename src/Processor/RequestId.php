@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -11,6 +12,7 @@ namespace Zend\Log\Processor;
 
 class RequestId implements ProcessorInterface
 {
+
     /**
      * Request identifier
      *
@@ -28,15 +30,15 @@ class RequestId implements ProcessorInterface
      */
     public function process(array $event)
     {
-        if (isset($event['extra']['requestId'])) {
+        if (isset($event['context']['requestId'])) {
             return $event;
         }
 
-        if (! isset($event['extra'])) {
-            $event['extra'] = [];
+        if (!isset($event['context'])) {
+            $event['context'] = [];
         }
 
-        $event['extra']['requestId'] = $this->getIdentifier();
+        $event['context']['requestId'] = $this->getIdentifier();
         return $event;
     }
 
@@ -63,4 +65,5 @@ class RequestId implements ProcessorInterface
 
         return $this->identifier;
     }
+
 }

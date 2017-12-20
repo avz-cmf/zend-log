@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -11,6 +12,7 @@ namespace Zend\Log\Processor;
 
 class Backtrace implements ProcessorInterface
 {
+
     /**
      * Maximum stack level of backtrace (PHP > 5.4.0)
      * @var int
@@ -24,11 +26,11 @@ class Backtrace implements ProcessorInterface
     protected $ignoredNamespace = 'Zend\\Log';
 
     /**
-     * Adds the origin of the log() call to the event extras
+     * Adds the origin of the log() call to the event contexts
      *
      * @param array $event event data
      * @return array event data
-    */
+     */
     public function process(array $event)
     {
         $trace = $this->getBacktrace();
@@ -37,24 +39,23 @@ class Backtrace implements ProcessorInterface
         array_shift($trace); // ignore $this->process()
 
         $i = 0;
-        while (isset($trace[$i]['class'])
-               && false !== strpos($trace[$i]['class'], $this->ignoredNamespace)
+        while (isset($trace[$i]['class']) && false !== strpos($trace[$i]['class'], $this->ignoredNamespace)
         ) {
             $i++;
         }
 
         $origin = [
-            'file'     => isset($trace[$i - 1]['file']) ? $trace[$i - 1]['file'] : null,
-            'line'     => isset($trace[$i - 1]['line']) ? $trace[$i - 1]['line'] : null,
-            'class'    => isset($trace[$i]['class']) ? $trace[$i]['class'] : null,
+            'file' => isset($trace[$i - 1]['file']) ? $trace[$i - 1]['file'] : null,
+            'line' => isset($trace[$i - 1]['line']) ? $trace[$i - 1]['line'] : null,
+            'class' => isset($trace[$i]['class']) ? $trace[$i]['class'] : null,
             'function' => isset($trace[$i]['function']) ? $trace[$i]['function'] : null,
         ];
 
-        $extra = $origin;
-        if (isset($event['extra'])) {
-            $extra = array_merge($origin, $event['extra']);
+        $context = $origin;
+        if (isset($event['context'])) {
+            $context = array_merge($origin, $event['context']);
         }
-        $event['extra'] = $extra;
+        $event['context'] = $context;
 
         return $event;
     }
@@ -68,4 +69,5 @@ class Backtrace implements ProcessorInterface
     {
         return debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $this->traceLimit);
     }
+
 }

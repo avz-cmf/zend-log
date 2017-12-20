@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -14,23 +15,25 @@ use Zend\Log\Processor\Backtrace;
 
 class BacktraceTest extends TestCase
 {
+
     public function testProcess()
     {
         $processor = new Backtrace();
 
         $event = [
-                'timestamp'    => '',
-                'priority'     => 1,
-                'priorityName' => 'ALERT',
-                'message'      => 'foo',
-                'extra'        => []
+            'timestamp' => '',
+            'priority' => 1,
+            'priorityName' => 'ALERT',
+            'message' => 'foo',
+            'context' => []
         ];
 
         $event = $processor->process($event);
 
-        $this->assertArrayHasKey('file', $event['extra']);
-        $this->assertArrayHasKey('line', $event['extra']);
-        $this->assertArrayHasKey('class', $event['extra']);
-        $this->assertArrayHasKey('function', $event['extra']);
+        $this->assertArrayHasKey('file', $event['context']);
+        $this->assertArrayHasKey('line', $event['context']);
+        $this->assertArrayHasKey('class', $event['context']);
+        $this->assertArrayHasKey('function', $event['context']);
     }
+
 }

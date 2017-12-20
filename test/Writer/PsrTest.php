@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -24,13 +25,14 @@ use Zend\Log\Writer\Psr as PsrWriter;
  */
 class PsrTest extends TestCase
 {
+
     /**
      * @covers ::__construct
      */
     public function testConstructWithPsrLogger()
     {
         $psrLogger = $this->createMock(LoggerInterface::class);
-        $writer    = new PsrWriter($psrLogger);
+        $writer = new PsrWriter($psrLogger);
         $this->assertAttributeSame($psrLogger, 'logger', $writer);
     }
 
@@ -41,11 +43,11 @@ class PsrTest extends TestCase
     {
         $psrLogger = $this->createMock(LoggerInterface::class);
         $formatter = new SimpleFormatter();
-        $filter    = new MockFilter();
+        $filter = new MockFilter();
         $writer = new PsrWriter([
-            'filters'   => $filter,
+            'filters' => $filter,
             'formatter' => $formatter,
-            'logger'    => $psrLogger,
+            'logger' => $psrLogger,
         ]);
 
         $this->assertAttributeSame($psrLogger, 'logger', $writer);
@@ -71,22 +73,20 @@ class PsrTest extends TestCase
     public function testWriteLogMapsLevelsProperly($priority, $logLevel)
     {
         $message = 'foo';
-        $extra   = ['bar' => 'baz'];
+        $context = ['bar' => 'baz'];
 
         $psrLogger = $this->createMock(LoggerInterface::class);
         $psrLogger->expects($this->once())
-            ->method('log')
-            ->with(
-                $this->equalTo($logLevel),
-                $this->equalTo($message),
-                $this->equalTo($extra)
-            );
+                ->method('log')
+                ->with(
+                        $this->equalTo($logLevel), $this->equalTo($message), $this->equalTo($context)
+        );
 
         $writer = new PsrWriter($psrLogger);
         $logger = new Logger();
         $logger->addWriter($writer);
 
-        $logger->log($priority, $message, $extra);
+        $logger->log($priority, $message, $context);
     }
 
     /**
@@ -97,14 +97,23 @@ class PsrTest extends TestCase
     public function priorityToLogLevelProvider()
     {
         return [
-            'emergency' => [Logger::EMERG, LogLevel::EMERGENCY],
-            'alert'     => [Logger::ALERT, LogLevel::ALERT],
-            'critical'  => [Logger::CRIT, LogLevel::CRITICAL],
-            'error'     => [Logger::ERR, LogLevel::ERROR],
-            'warn'      => [Logger::WARN, LogLevel::WARNING],
-            'notice'    => [Logger::NOTICE, LogLevel::NOTICE],
-            'info'      => [Logger::INFO, LogLevel::INFO],
-            'debug'     => [Logger::DEBUG, LogLevel::DEBUG],
+            [0, LogLevel::EMERGENCY],
+            [1, LogLevel::ALERT],
+            [2, LogLevel::CRITICAL],
+            [3, LogLevel::ERROR],
+            [4, LogLevel::WARNING],
+            [5, LogLevel::NOTICE],
+            [6, LogLevel::INFO],
+            [7, LogLevel::DEBUG],
+            'emergency' => [LogLevel::EMERGENCY, LogLevel::EMERGENCY],
+            'alert' => [LogLevel::ALERT, LogLevel::ALERT],
+            'critical' => [LogLevel::CRITICAL, LogLevel::CRITICAL],
+            'error' => [LogLevel::ERROR, LogLevel::ERROR],
+            'warn' => [LogLevel::WARNING, LogLevel::WARNING],
+            'notice' => [LogLevel::NOTICE, LogLevel::NOTICE],
+            'info' => [LogLevel::INFO, LogLevel::INFO],
+            'debug' => [LogLevel::DEBUG, LogLevel::DEBUG],
         ];
     }
+
 }

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -18,6 +19,7 @@ use Zend\Stdlib\ArrayUtils;
 
 class Xml implements FormatterInterface
 {
+
     /**
      * @var string Name of root element
      */
@@ -59,7 +61,7 @@ class Xml implements FormatterInterface
             $options = ArrayUtils::iteratorToArray($options);
         }
 
-        if (! is_array($options)) {
+        if (!is_array($options)) {
             $args = func_get_args();
 
             $options = [
@@ -79,11 +81,11 @@ class Xml implements FormatterInterface
             }
         }
 
-        if (! array_key_exists('rootElement', $options)) {
+        if (!array_key_exists('rootElement', $options)) {
             $options['rootElement'] = 'logEntry';
         }
 
-        if (! array_key_exists('encoding', $options)) {
+        if (!array_key_exists('encoding', $options)) {
             $options['encoding'] = 'UTF-8';
         }
 
@@ -91,7 +93,7 @@ class Xml implements FormatterInterface
         $this->setEncoding($options['encoding']);
 
         if (array_key_exists('elementMap', $options)) {
-            $this->elementMap  = $options['elementMap'];
+            $this->elementMap = $options['elementMap'];
         }
 
         if (array_key_exists('dateTimeFormat', $options)) {
@@ -170,27 +172,24 @@ class Xml implements FormatterInterface
             }
         }
 
-        $enc     = $this->getEncoding();
+        $enc = $this->getEncoding();
         $escaper = $this->getEscaper();
-        $dom     = new DOMDocument('1.0', $enc);
-        $elt     = $dom->appendChild(new DOMElement($this->rootElement));
+        $dom = new DOMDocument('1.0', $enc);
+        $elt = $dom->appendChild(new DOMElement($this->rootElement));
 
         foreach ($dataToInsert as $key => $value) {
-            if (empty($value)
-                || is_scalar($value)
-                || ((is_array($value) || $value instanceof Traversable) && $key == "extra")
-                || (is_object($value) && method_exists($value, '__toString'))
+            if (empty($value) || is_scalar($value) || ((is_array($value) || $value instanceof Traversable) && $key == "context") || (is_object($value) && method_exists($value, '__toString'))
             ) {
                 if ($key == "message") {
                     $value = $escaper->escapeHtml($value);
                 }
 
-                if ($key == "extra" && empty($value)) {
+                if ($key == "context" && empty($value)) {
                     continue;
                 }
 
-                if ($key == "extra" && (is_array($value) || $value instanceof Traversable)) {
-                    $elt->appendChild($this->buildElementTree($dom, $dom->createElement('extra'), $value));
+                if ($key == "context" && (is_array($value) || $value instanceof Traversable)) {
+                    $elt->appendChild($this->buildElementTree($dom, $dom->createElement('context'), $value));
 
                     continue;
                 }
@@ -211,7 +210,7 @@ class Xml implements FormatterInterface
      */
     protected function buildElementTree(DOMDocument $doc, DOMElement $rootElement, $mixedData)
     {
-        if (! (is_array($mixedData) || $mixedData instanceof Traversable)) {
+        if (!(is_array($mixedData) || $mixedData instanceof Traversable)) {
             return $rootElement;
         }
 
@@ -228,10 +227,10 @@ class Xml implements FormatterInterface
                 continue;
             }
 
-            if (is_object($value) && ! method_exists($value, '__toString')) {
+            if (is_object($value) && !method_exists($value, '__toString')) {
                 // object does not support __toString() method, manually convert the value
                 $value = $this->getEscaper()->escapeHtml(
-                    '"Object" of type ' . get_class($value) . " does not support __toString() method"
+                        '"Object" of type ' . get_class($value) . " does not support __toString() method"
                 );
             } else {
                 $value = $this->getEscaper()->escapeHtml($value);
@@ -239,7 +238,7 @@ class Xml implements FormatterInterface
 
             if (is_numeric($key)) {
                 // xml does not allow numeric values, try to switch the value and the key
-                $key   = (string) $value;
+                $key = (string) $value;
                 $value = null;
             }
 
@@ -270,4 +269,5 @@ class Xml implements FormatterInterface
         $this->dateTimeFormat = (string) $dateTimeFormat;
         return $this;
     }
+
 }

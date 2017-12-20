@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -21,23 +22,8 @@ use Zend\Log\Logger;
  */
 class Psr extends AbstractWriter
 {
-    use PsrLoggerAwareTrait;
 
-    /**
-     * Map priority to PSR-3 LogLevels
-     *
-     * @var int[]
-     */
-    protected $psrPriorityMap = [
-        Logger::EMERG  => LogLevel::EMERGENCY,
-        Logger::ALERT  => LogLevel::ALERT,
-        Logger::CRIT   => LogLevel::CRITICAL,
-        Logger::ERR    => LogLevel::ERROR,
-        Logger::WARN   => LogLevel::WARNING,
-        Logger::NOTICE => LogLevel::NOTICE,
-        Logger::INFO   => LogLevel::INFO,
-        Logger::DEBUG  => LogLevel::DEBUG,
-    ];
+    use PsrLoggerAwareTrait;
 
     /**
      * Default log level (warning)
@@ -87,14 +73,11 @@ class Psr extends AbstractWriter
      */
     protected function doWrite(array $event)
     {
-        $priority = $event['priority'];
-        $message  = $event['message'];
-        $context  = $event['extra'];
-
-        $level = isset($this->psrPriorityMap[$priority])
-            ? $this->psrPriorityMap[$priority]
-            : $this->defaultLogLevel;
+        $level = $event['level'];
+        $message = $event['message'];
+        $context = $event['context'];
 
         $this->logger->log($level, $message, $context);
     }
+
 }

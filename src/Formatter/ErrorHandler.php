@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -13,8 +14,9 @@ use DateTime;
 
 class ErrorHandler extends Simple
 {
-    const DEFAULT_FORMAT = '%timestamp% %priorityName% (%priority%) %message% (errno %extra[errno]%) '
-    . 'in %extra[file]% on line %extra[line]%';
+
+    const DEFAULT_FORMAT = '%timestamp% %priorityName% (%priority%) %message% (errno %context[errno]%) '
+            . 'in %context[file]% on line %context[line]%';
 
     /**
      * This method formats the event for the PHP Error Handler.
@@ -53,11 +55,11 @@ class ErrorHandler extends Simple
             if ($value === null) {
                 continue;
             }
-            if (! is_array($value)) {
+            if (!is_array($value)) {
                 if ($key === null) {
                     $result[$nextIndex] = $value;
                 } else {
-                    if (! is_object($value) || method_exists($value, "__toString")) {
+                    if (!is_object($value) || method_exists($value, "__toString")) {
                         $result[$nextIndex] = $value;
                     }
                 }
@@ -67,4 +69,5 @@ class ErrorHandler extends Simple
         }
         return $result;
     }
+
 }

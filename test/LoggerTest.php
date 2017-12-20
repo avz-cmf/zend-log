@@ -21,14 +21,47 @@ use Zend\Log\Writer\Stream as StreamWriter;
 use Zend\Log\Filter\Mock as MockFilter;
 use Zend\Stdlib\SplPriorityQueue;
 use Zend\Validator\Digits as DigitsFilter;
+use Psr\Log\LogLevel;
+use Psr\Log\Test\LoggerInterfaceTest;
+use Zend\Log\Processor\PsrPlaceholder;
 
-class LoggerTest extends TestCase
+class LoggerTest extends LoggerInterfaceTest
 {
 
     /**
      * @var Logger
      */
     private $logger;
+
+    /**
+     * Provides logger for LoggerInterface compat tests
+     *
+     * @return PsrLoggerAdapter
+     */
+    public function getLogger()
+    {
+        $this->mockWriter = new MockWriter;
+        $this->logger->addWriter($this->mockWriter);
+        return $this->logger;
+    }
+
+    /**
+     * This must return the log messages in order.
+     *
+     * The simple formatting of the messages is: "<LOG LEVEL> <MESSAGE>".
+     *
+     * Example ->error('Foo') would yield "error Foo".
+     *
+     * @return string[]
+     */
+    public function getLogs()
+    {
+        return array_map(function ($event) use ($prefixMap) {
+            $prefix = $event['level'];
+            $message = $prefix . ' ' . $event['message'];
+            return $message;
+        }, $this->mockWriter->events);
+    }
 
     /**
      * {@inheritDoc}
@@ -60,7 +93,7 @@ class LoggerTest extends TestCase
     {
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('No log writer specified');
-        $this->logger->log(Logger::INFO, 'test');
+        $this->logger->log(LogLevel::INFO, 'test');
     }
 
     public function testSetWriters()
@@ -114,7 +147,7 @@ class LoggerTest extends TestCase
     {
         $writer = new MockWriter;
         $this->logger->addWriter($writer);
-        $this->logger->log(Logger::INFO, 'tottakai');
+        $this->logger->log(LogLevel::INFO, 'tottakai');
 
         $this->assertEquals(count($writer->events), 1);
         $this->assertContains('tottakai', $writer->events[0]['message']);
@@ -124,7 +157,7 @@ class LoggerTest extends TestCase
     {
         $writer = new MockWriter;
         $this->logger->addWriter($writer);
-        $this->logger->log(Logger::INFO, ['test']);
+        $this->logger->log(LogLevel::INFO, ['test']);
 
         $this->assertEquals(count($writer->events), 1);
         $this->assertContains('test', $writer->events[0]['message']);
@@ -136,7 +169,7 @@ class LoggerTest extends TestCase
         $filter = new MockFilter;
         $writer->addFilter($filter);
         $this->logger->addWriter($writer);
-        $this->logger->log(Logger::INFO, ['test']);
+        $this->logger->log(LogLevel::INFO, ['test']);
 
         $this->assertEquals(count($filter->events), 1);
         $this->assertContains('test', $filter->events[0]['message']);
@@ -147,7 +180,7 @@ class LoggerTest extends TestCase
         $writer = new MockWriter;
         $writer->addFilter('mock');
         $this->logger->addWriter($writer);
-        $this->logger->log(Logger::INFO, ['test']);
+        $this->logger->log(LogLevel::INFO, ['test']);
 
         $this->assertEquals(count($writer->events), 1);
         $this->assertContains('test', $writer->events[0]['message']);
@@ -191,43 +224,41 @@ class LoggerTest extends TestCase
         return [
             [[]],
             [['user' => 'foo', 'ip' => '127.0.0.1']],
-            [new \ArrayObject(['id' => 42])],
+            [[['id' => 42]]],
         ];
     }
 
     /**
      * @dataProvider provideAttributes
      */
-    public function testLoggingCustomAttributesForUserContext($extra)
+    public function testLoggingCustomAttributesForUserContext($context)
     {
         $writer = new MockWriter;
         $this->logger->addWriter($writer);
-        $this->logger->log(Logger::ERR, 'tottakai', $extra);
+        $this->logger->log(LogLevel::ERROR, 'tottakai', $context);
 
         $this->assertEquals(count($writer->events), 1);
-        $this->assertInternalType('array', $writer->events[0]['extra']);
-        $this->assertEquals(count($writer->events[0]['extra']), count($extra));
+        $this->assertInternalType('array', $writer->events[0]['context']);
+        $this->assertEquals(count($writer->events[0]['context']), count($context));
     }
 
     public static function provideInvalidArguments()
     {
         return [
-            [new \stdClass(), ['valid']],
-            ['valid', null],
-            ['valid', true],
-            ['valid', 10],
-            ['valid', 'invalid'],
-            ['valid', new \stdClass()],
+            [new \stdClass(), ['valid'], \InvalidArgumentException::class],
+            ['valid', true, \TypeError::class],
+            ['valid', 10, \TypeError::class],
+            ['valid', 'invalid', \TypeError::class],
         ];
     }
 
     /**
      * @dataProvider provideInvalidArguments
      */
-    public function testPassingInvalidArgumentToLogRaisesException($message, $extra)
+    public function testPassingInvalidArgumentToLogRaisesException($message, $context, $exc)
     {
-        $this->expectException('Zend\Log\Exception\InvalidArgumentException');
-        $this->logger->log(Logger::ERR, $message, $extra);
+        $this->expectException($exc);
+        $this->logger->log(LogLevel::ERROR, $message, $context);
     }
 
     public function testRegisterErrorHandler()
@@ -327,7 +358,7 @@ class LoggerTest extends TestCase
 
         $writer = new MockWriter;
         $this->logger->addWriter($writer);
-        $this->logger->log(Logger::ERR, 'foo');
+        $this->logger->log(LogLevel::ERROR, 'foo');
     }
 
     public function testProcessorOutputAdded()
@@ -337,8 +368,8 @@ class LoggerTest extends TestCase
         $writer = new MockWriter;
         $this->logger->addWriter($writer);
 
-        $this->logger->log(Logger::ERR, 'foo');
-        $this->assertEquals(__FILE__, $writer->events[0]['extra']['file']);
+        $this->logger->log(LogLevel::ERROR, 'foo');
+        $this->assertEquals(__FILE__, $writer->events[0]['context']['file']);
     }
 
     public function testExceptionHandler()
@@ -366,17 +397,17 @@ class LoggerTest extends TestCase
 
         // check logged messages
         $expectedEvents = [
-            ['priority' => Logger::ERR, 'message' => 'previos', 'file' => __FILE__],
-            ['priority' => Logger::ERR, 'message' => 'error', 'file' => __FILE__],
-            ['priority' => Logger::NOTICE, 'message' => 'user notice', 'file' => __FILE__],
+            ['level' => LogLevel::ERROR, 'message' => 'previos', 'file' => __FILE__],
+            ['level' => LogLevel::ERROR, 'message' => 'error', 'file' => __FILE__],
+            ['level' => LogLevel::NOTICE, 'message' => 'user notice', 'file' => __FILE__],
         ];
         for ($i = 0; $i < count($expectedEvents); $i++) {
             $expectedEvent = $expectedEvents[$i];
             $event = $writer->events[$i];
 
-            $this->assertEquals($expectedEvent['priority'], $event['priority'], 'Unexpected priority');
+            $this->assertEquals($expectedEvent['level'], $event['level'], 'Unexpected priority');
             $this->assertEquals($expectedEvent['message'], $event['message'], 'Unexpected message');
-            $this->assertEquals($expectedEvent['file'], $event['extra']['file'], 'Unexpected file');
+            $this->assertEquals($expectedEvent['file'], $event['context']['file'], 'Unexpected file');
         }
     }
 
@@ -395,7 +426,7 @@ class LoggerTest extends TestCase
         ];
         $logger = new Logger($options);
 
-        $this->assertInstanceOf('Zend\Log\Logger', $logger->info('Hi', ['extra' => '']));
+        $this->assertNull($logger->info('Hi', ['context' => '']));
         fclose($stream);
     }
 
@@ -490,11 +521,52 @@ class LoggerTest extends TestCase
      */
     public function testCatchExceptionNotValidPriority()
     {
-        $this->expectException('Zend\Log\Exception\InvalidArgumentException');
-        $this->expectExceptionMessage('$priority must be an integer >= 0 and < 8; received -1');
+        $this->expectException('Psr\Log\InvalidArgumentException');
+        $this->expectExceptionMessage('$level must be one of PSR-3 log levels; received -1');
         $writer = new MockWriter();
         $this->logger->addWriter($writer);
         $this->logger->log(-1, 'Foo');
+    }
+
+    /**
+     * @dataProvider priorityToLogLevelProvider
+     */
+    public function testWriteLogMapsLevelsProperly($priorityLevel, $logLevel, $priority)
+    {
+        $writer = new MockWriter;
+        $this->logger->addWriter($writer);
+        $this->logger->log($priorityLevel, 'tottakai');
+
+        $this->assertEquals(count($writer->events), 1);
+        $this->assertEquals($logLevel, $writer->events[0]['level']);
+        $this->assertEquals($priority, $writer->events[0]['priority']);
+    }
+
+    /**
+     * Data provider
+     *
+     * @return array
+     */
+    public function priorityToLogLevelProvider()
+    {
+        return [
+            [0, LogLevel::EMERGENCY, 0],
+            [1, LogLevel::ALERT, 1],
+            [2, LogLevel::CRITICAL, 2],
+            [3, LogLevel::ERROR, 3],
+            [4, LogLevel::WARNING, 4],
+            [5, LogLevel::NOTICE, 5],
+            [6, LogLevel::INFO, 6],
+            [7, LogLevel::DEBUG, 7],
+            [LogLevel::EMERGENCY, LogLevel::EMERGENCY, 0],
+            [LogLevel::ALERT, LogLevel::ALERT, 1],
+            [LogLevel::CRITICAL, LogLevel::CRITICAL, 2],
+            [LogLevel::ERROR, LogLevel::ERROR, 3],
+            [LogLevel::WARNING, LogLevel::WARNING, 4],
+            [LogLevel::NOTICE, LogLevel::NOTICE, 5],
+            [LogLevel::INFO, LogLevel::INFO, 6],
+            [LogLevel::DEBUG, LogLevel::DEBUG, 7],
+        ];
     }
 
 }

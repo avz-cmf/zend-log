@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -11,7 +12,7 @@ namespace Zend\Log;
 
 use Psr\Log\AbstractLogger as PsrAbstractLogger;
 use Psr\Log\InvalidArgumentException;
-use Psr\Log\LogLevel;
+use Psr\Log\LoggerInterface as PsrLoggerInterface;
 
 /**
  * PSR-3 logger adapter for Zend\Log\LoggerInterface
@@ -21,35 +22,20 @@ use Psr\Log\LogLevel;
  */
 class PsrLoggerAdapter extends PsrAbstractLogger
 {
+
     /**
      * Zend\Log logger
      *
-     * @var LoggerInterface
+     * @var PsrLoggerInterface
      */
     protected $logger;
-
-    /**
-     * Map PSR-3 LogLevels to priority
-     *
-     * @var array
-     */
-    protected $psrPriorityMap = [
-        LogLevel::EMERGENCY => Logger::EMERG,
-        LogLevel::ALERT     => Logger::ALERT,
-        LogLevel::CRITICAL  => Logger::CRIT,
-        LogLevel::ERROR     => Logger::ERR,
-        LogLevel::WARNING   => Logger::WARN,
-        LogLevel::NOTICE    => Logger::NOTICE,
-        LogLevel::INFO      => Logger::INFO,
-        LogLevel::DEBUG     => Logger::DEBUG,
-    ];
 
     /**
      * Constructor
      *
      * @param LoggerInterface $logger
      */
-    public function __construct(LoggerInterface $logger)
+    public function __construct(PsrLoggerInterface $logger)
     {
         $this->logger = $logger;
     }
@@ -57,7 +43,7 @@ class PsrLoggerAdapter extends PsrAbstractLogger
     /**
      * Returns composed LoggerInterface instance.
      *
-     * @return LoggerInterface
+     * @return PsrLoggerInterface
      */
     public function getLogger()
     {
@@ -75,14 +61,7 @@ class PsrLoggerAdapter extends PsrAbstractLogger
      */
     public function log($level, $message, array $context = [])
     {
-        if (! array_key_exists($level, $this->psrPriorityMap)) {
-            throw new InvalidArgumentException(sprintf(
-                '$level must be one of PSR-3 log levels; received %s',
-                var_export($level, 1)
-            ));
-        }
-
-        $priority = $this->psrPriorityMap[$level];
-        $this->logger->log($priority, $message, $context);
+        $this->logger->log($level, $message, $context);
     }
+
 }

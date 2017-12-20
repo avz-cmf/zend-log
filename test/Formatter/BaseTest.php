@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -19,6 +20,7 @@ use Zend\Log\Formatter\Base as BaseFormatter;
 
 class BaseTest extends TestCase
 {
+
     public function testDefaultDateTimeFormat()
     {
         $formatter = new BaseFormatter();
@@ -80,7 +82,7 @@ class BaseTest extends TestCase
             'timestamp' => $datetime,
             'priority' => 1,
             'message' => 'tottakai',
-            'extra' => [
+            'context' => [
                 'float' => 0.2,
                 'boolean' => false,
                 'array_empty' => [],
@@ -98,7 +100,7 @@ class BaseTest extends TestCase
             'timestamp' => $datetime->format($formatter->getDateTimeFormat()),
             'priority' => 1,
             'message' => 'tottakai',
-            'extra' => [
+            'context' => [
                 'boolean' => false,
                 'float' => 0.2,
                 'array_empty' => '[]',
@@ -118,7 +120,7 @@ class BaseTest extends TestCase
 
     public function testFormatNoInfiniteLoopOnSelfReferencingArrayValues()
     {
-        $datetime  = new DateTime();
+        $datetime = new DateTime();
         $formatter = new BaseFormatter();
 
         $selfRefArr = [];
@@ -126,9 +128,9 @@ class BaseTest extends TestCase
 
         $event = [
             'timestamp' => $datetime,
-            'priority'  => 1,
-            'message'   => 'tottakai',
-            'extra' => [
+            'priority' => 1,
+            'message' => 'tottakai',
+            'context' => [
                 'selfRefArr' => $selfRefArr,
             ],
         ];
@@ -136,18 +138,18 @@ class BaseTest extends TestCase
         if (version_compare(PHP_VERSION, '5.5', 'lt')) {
             $outputExpected = [
                 'timestamp' => $datetime->format($formatter->getDateTimeFormat()),
-                'priority'  => 1,
-                'message'   => 'tottakai',
-                'extra' => [
+                'priority' => 1,
+                'message' => 'tottakai',
+                'context' => [
                     'selfRefArr' => '{"selfRefArr":{"selfRefArr":null}}',
                 ],
             ];
         } else {
             $outputExpected = [
                 'timestamp' => $datetime->format($formatter->getDateTimeFormat()),
-                'priority'  => 1,
-                'message'   => 'tottakai',
-                'extra' => [
+                'priority' => 1,
+                'message' => 'tottakai',
+                'context' => [
                     'selfRefArr' => '',
                 ],
             ];
@@ -161,14 +163,15 @@ class BaseTest extends TestCase
         $formatter = new BaseFormatter();
 
         $event = [
-            'message'   => 'Hi',
-            'extra'     => '',
+            'message' => 'Hi',
+            'context' => '',
         ];
         $outputExpected = [
             'message' => 'Hi',
-            'extra'   => '',
+            'context' => '',
         ];
 
         $this->assertEquals($outputExpected, $formatter->format($event));
     }
+
 }

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -14,9 +15,12 @@ use Zend\Log\Writer\Noop as NoopWriter;
 
 class NoopTest extends TestCase
 {
+
     public function testWrite()
     {
         $writer = new NoopWriter();
         $writer->write(['message' => 'foo', 'priority' => 42]);
+        $this->assertTrue(true);
     }
+
 }

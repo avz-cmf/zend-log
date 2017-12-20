@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -23,6 +24,7 @@ use Zend\Validator\Digits as DigitsFilter;
 
 class LoggerTest extends TestCase
 {
+
     /**
      * @var Logger
      */
@@ -158,7 +160,7 @@ class LoggerTest extends TestCase
     {
         $data = [
             ['priority', ['priority' => Logger::INFO]],
-            ['regex', [ 'regex' => '/[0-9]+/' ]],
+            ['regex', ['regex' => '/[0-9]+/']],
         ];
 
         // Conditionally enabled until zend-validator is forwards-compatible
@@ -230,6 +232,8 @@ class LoggerTest extends TestCase
 
     public function testRegisterErrorHandler()
     {
+
+
         $writer = new MockWriter;
         $this->logger->addWriter($writer);
 
@@ -240,9 +244,13 @@ class LoggerTest extends TestCase
         // check for single error handler instance
         $this->assertFalse(Logger::registerErrorHandler($this->logger));
 
+        $level = error_reporting();
+        error_reporting(E_ALL);
+
         // generate a warning
         echo $test; // $test is not defined
 
+        error_reporting($level);
         Logger::unregisterErrorHandler();
 
         $this->assertEquals($writer->events[0]['message'], 'Undefined variable: test');
@@ -251,10 +259,10 @@ class LoggerTest extends TestCase
     public function testOptionsWithMock()
     {
         $options = ['writers' => [
-                             'first_writer' => [
-                                 'name'     => 'mock',
-                             ]
-                        ]];
+                'first_writer' => [
+                    'name' => 'mock',
+                ]
+        ]];
         $logger = new Logger($options);
 
         $writers = $logger->getWriters()->toArray();
@@ -265,14 +273,14 @@ class LoggerTest extends TestCase
     public function testOptionsWithWriterOptions()
     {
         $options = ['writers' => [
-                              [
-                                 'name'     => 'stream',
-                                 'options'  => [
-                                     'stream' => 'php://output',
-                                     'log_separator' => 'foo'
-                                 ],
-                              ]
-                         ]];
+                [
+                    'name' => 'stream',
+                    'options' => [
+                        'stream' => 'php://output',
+                        'log_separator' => 'foo'
+                    ],
+                ]
+        ]];
         $logger = new Logger($options);
 
         $writers = $logger->getWriters()->toArray();
@@ -345,6 +353,7 @@ class LoggerTest extends TestCase
 
         // get the internal exception handler
         $exceptionHandler = set_exception_handler(function ($e) {
+
         });
         set_exception_handler($exceptionHandler);
 
@@ -357,13 +366,13 @@ class LoggerTest extends TestCase
 
         // check logged messages
         $expectedEvents = [
-            ['priority' => Logger::ERR,    'message' => 'previos',     'file' => __FILE__],
-            ['priority' => Logger::ERR,    'message' => 'error',       'file' => __FILE__],
+            ['priority' => Logger::ERR, 'message' => 'previos', 'file' => __FILE__],
+            ['priority' => Logger::ERR, 'message' => 'error', 'file' => __FILE__],
             ['priority' => Logger::NOTICE, 'message' => 'user notice', 'file' => __FILE__],
         ];
         for ($i = 0; $i < count($expectedEvents); $i++) {
             $expectedEvent = $expectedEvents[$i];
-            $event         = $writer->events[$i];
+            $event = $writer->events[$i];
 
             $this->assertEquals($expectedEvent['priority'], $event['priority'], 'Unexpected priority');
             $this->assertEquals($expectedEvent['message'], $event['message'], 'Unexpected message');
@@ -377,8 +386,8 @@ class LoggerTest extends TestCase
         $options = [
             'writers' => [
                 [
-                    'name'     => 'stream',
-                    'options'  => [
+                    'name' => 'stream',
+                    'options' => [
                         'stream' => $stream
                     ],
                 ],
@@ -395,18 +404,22 @@ class LoggerTest extends TestCase
      */
     public function testErrorHandlerWithStreamWriter()
     {
-        $options      = ['errorhandler' => true];
-        $logger       = new Logger($options);
-        $stream       = fopen('php://memory', 'w+');
+
+        $options = ['errorhandler' => true];
+        $logger = new Logger($options);
+        $stream = fopen('php://memory', 'w+');
         $streamWriter = new StreamWriter($stream);
 
         // error handler does not like this feature so turn it off
         $streamWriter->setConvertWriteErrorsToExceptions(false);
         $logger->addWriter($streamWriter);
 
+        $level = error_reporting();
+        error_reporting(E_ALL);
         // we raise two notices - both should be logged
         echo $test;
         echo $second;
+        error_reporting($level);
 
         rewind($stream);
         $contents = stream_get_contents($stream);
@@ -434,8 +447,7 @@ class LoggerTest extends TestCase
 
         register_shutdown_function(function () use ($writer) {
             $this->assertEquals(
-                'Call to undefined method ZendTest\Log\LoggerTest::callToNonExistingMethod()',
-                $writer->events[0]['message']
+                    'Call to undefined method ZendTest\Log\LoggerTest::callToNonExistingMethod()', $writer->events[0]['message']
             );
         });
 
@@ -465,8 +477,7 @@ class LoggerTest extends TestCase
 
         register_shutdown_function(function () use ($writer) {
             $this->assertStringMatchesFormat(
-                'syntax error%A',
-                $writer->events[0]['message']
+                    'syntax error%A', $writer->events[0]['message']
             );
         });
 
@@ -485,4 +496,5 @@ class LoggerTest extends TestCase
         $this->logger->addWriter($writer);
         $this->logger->log(-1, 'Foo');
     }
+
 }

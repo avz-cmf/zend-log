@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -17,6 +18,7 @@ use ZendTest\Log\TestAsset\CustomSyslogWriter;
 
 class SyslogTest extends TestCase
 {
+
     public function testWrite()
     {
         $fields = [
@@ -25,6 +27,7 @@ class SyslogTest extends TestCase
         ];
         $writer = new SyslogWriter();
         $writer->write($fields);
+        $this->assertTrue(true);
     }
 
     /**
@@ -57,9 +60,9 @@ class SyslogTest extends TestCase
      */
     public function testFluentInterface()
     {
-        $writer   = new SyslogWriter();
+        $writer = new SyslogWriter();
         $instance = $writer->setFacility(LOG_USER)
-                           ->setApplicationName('my_app');
+                ->setApplicationName('my_app');
 
         $this->assertInstanceOf('Zend\Log\Writer\Syslog', $instance);
     }
@@ -88,6 +91,7 @@ class SyslogTest extends TestCase
         $writer->setFormatter($formatter);
 
         $writer->write($event);
+        $this->assertTrue(true);
     }
 
     /**
@@ -95,18 +99,18 @@ class SyslogTest extends TestCase
      */
     public function testPassApplicationNameViaConstructor()
     {
-        $writer   = new CustomSyslogWriter(['application' => 'test_app']);
+        $writer = new CustomSyslogWriter(['application' => 'test_app']);
         $this->assertEquals('test_app', $writer->getApplicationName());
     }
 
     public function testConstructWithOptions()
     {
         $formatter = new \Zend\Log\Formatter\Simple();
-        $filter    = new \Zend\Log\Filter\Mock();
+        $filter = new \Zend\Log\Filter\Mock();
         $writer = new CustomSyslogWriter([
-                'filters'   => $filter,
-                'formatter' => $formatter,
-                'application'  => 'test_app',
+            'filters' => $filter,
+            'formatter' => $formatter,
+            'application' => 'test_app',
         ]);
         $this->assertEquals('test_app', $writer->getApplicationName());
         $this->assertAttributeEquals($formatter, 'formatter', $writer);
@@ -118,7 +122,8 @@ class SyslogTest extends TestCase
 
     public function testDefaultFormatter()
     {
-        $writer   = new CustomSyslogWriter(['application' => 'test_app']);
+        $writer = new CustomSyslogWriter(['application' => 'test_app']);
         $this->assertAttributeInstanceOf('Zend\Log\Formatter\Simple', 'formatter', $writer);
     }
+
 }

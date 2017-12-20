@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -14,6 +15,7 @@ use Zend\Log\Writer\ZendMonitor;
 
 class ZendMonitorTest extends TestCase
 {
+
     /**
      * @group ZF-10081
      */
@@ -24,6 +26,7 @@ class ZendMonitorTest extends TestCase
             'message' => 'my mess',
             'priority' => 1
         ]);
+        $this->assertTrue(true);
     }
 
     public function testIsEnabled()
@@ -31,4 +34,5 @@ class ZendMonitorTest extends TestCase
         $writer = new ZendMonitor();
         $this->assertInternalType('boolean', $writer->isEnabled());
     }
+
 }

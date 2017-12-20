@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -17,6 +18,7 @@ use Zend\Log\Writer\Stream as StreamWriter;
 
 class StreamWriterTest extends TestCase
 {
+
     /**
      * Flag used to prevent running tests that require full isolation
      */
@@ -49,11 +51,13 @@ class StreamWriterTest extends TestCase
     {
         $stream = fopen('php://memory', 'w+');
         new StreamWriter($stream);
+        $this->assertTrue(true);
     }
 
     public function testConstructorWithValidUrl()
     {
         new StreamWriter('php://memory');
+        $this->assertTrue(true);
     }
 
     public function testConstructorThrowsWhenModeSpecifiedForExistingStream()
@@ -154,8 +158,8 @@ class StreamWriterTest extends TestCase
     public function testAllowsSpecifyingLogSeparatorWithinArrayPassedToConstructor()
     {
         $options = [
-            'stream'        => 'php://memory',
-            'mode'          => 'w+',
+            'stream' => 'php://memory',
+            'mode' => 'w+',
             'log_separator' => '::',
         ];
         $writer = new StreamWriter($options);
@@ -165,13 +169,13 @@ class StreamWriterTest extends TestCase
     public function testConstructWithOptions()
     {
         $formatter = new SimpleFormatter();
-        $filter    = new MockFilter();
+        $filter = new MockFilter();
 
         $writer = new StreamWriter([
-            'filters'       => $filter,
-            'formatter'     => $formatter,
-            'stream'        => 'php://memory',
-            'mode'          => 'w+',
+            'filters' => $filter,
+            'formatter' => $formatter,
+            'stream' => 'php://memory',
+            'mode' => 'w+',
             'log_separator' => '::',
         ]);
 
@@ -191,16 +195,16 @@ class StreamWriterTest extends TestCase
 
     public function testCanSpecifyFilePermsViaChmodOption()
     {
-        $filter    = new MockFilter();
+        $filter = new MockFilter();
         $formatter = new SimpleFormatter();
-        $file      = $this->root->url() . '/foo';
+        $file = $this->root->url() . '/foo';
         $writer = new StreamWriter([
-                'filters'       => $filter,
-                'formatter'     => $formatter,
-                'stream'        => $file,
-                'mode'          => 'w+',
-                'chmod'         => 0664,
-                'log_separator' => '::',
+            'filters' => $filter,
+            'formatter' => $formatter,
+            'stream' => $file,
+            'mode' => 'w+',
+            'chmod' => 0664,
+            'log_separator' => '::',
         ]);
 
         $this->assertEquals(0664, $this->root->getChild('foo')->getPermissions());
@@ -211,15 +215,15 @@ class StreamWriterTest extends TestCase
         // Make the chmod() override emit a warning.
         $GLOBALS['chmod_throw_error'] = true;
 
-        $filter    = new MockFilter();
+        $filter = new MockFilter();
         $formatter = new SimpleFormatter();
-        $file      = $this->root->url() . '/foo';
+        $file = $this->root->url() . '/foo';
         $writer = new StreamWriter([
-            'filters'       => $filter,
-            'formatter'     => $formatter,
-            'stream'        => $file,
-            'mode'          => 'w+',
-            'chmod'         => 0777,
+            'filters' => $filter,
+            'formatter' => $formatter,
+            'stream' => $file,
+            'mode' => 'w+',
+            'chmod' => 0777,
         ]);
 
         $this->assertEquals(0666, $this->root->getChild('foo')->getPermissions());
@@ -229,12 +233,12 @@ class StreamWriterTest extends TestCase
     {
         if (self::$ranSuite) {
             $this->markTestSkipped(sprintf(
-                'The test %s only passes when run by itself; use the --filter argument to run it in isolation',
-                __FUNCTION__
+                            'The test %s only passes when run by itself; use the --filter argument to run it in isolation', __FUNCTION__
             ));
         }
         $file = $this->root->url() . '/foo';
         new StreamWriter($file, null, null, 0755);
         $this->assertEquals(0755, $this->root->getChild('foo')->getPermissions());
     }
+
 }

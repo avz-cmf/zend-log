@@ -23,7 +23,6 @@ use Zend\Stdlib\SplPriorityQueue;
 use Zend\Validator\Digits as DigitsFilter;
 use Psr\Log\LogLevel;
 use Psr\Log\Test\LoggerInterfaceTest;
-use Zend\Log\Processor\PsrPlaceholder;
 
 class LoggerTest extends LoggerInterfaceTest
 {

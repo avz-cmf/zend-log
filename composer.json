@@ -1,13 +1,14 @@
 {
-    "name": "zendframework/zend-log",
-    "description": "component for general purpose logging",
+    "name": "avz-cmf/zend-psr3-log",
+    "description": "forked from zendframework/zend-log",
     "license": "BSD-3-Clause",
     "keywords": [
         "zf2",
         "log",
-        "logging"
+        "logging",
+        "psr3"
     ],
-    "homepage": "https://github.com/zendframework/zend-log",
+    "homepage": "https://github.com/avz-cmf/zend-psr3-log",
     "require": {
         "php": "^5.6 || ^7.0",
         "psr/log": "^1.0",

@@ -13,6 +13,7 @@ namespace ZendTest\Log\Formatter;
 use DateTime;
 use PHPUnit\Framework\TestCase;
 use Zend\Log\Formatter\ExceptionHandler;
+use Psr\Log\LogLevel;
 
 class ExceptionHandlerTest extends TestCase
 {
@@ -25,7 +26,7 @@ class ExceptionHandlerTest extends TestCase
             'timestamp' => $date,
             'message' => 'test',
             'priority' => 1,
-            'priorityName' => 'CRIT',
+            'level' => LogLevel::CRITICAL,
             'context' => [
                 'file' => 'test.php',
                 'line' => 1,
@@ -52,7 +53,7 @@ class ExceptionHandlerTest extends TestCase
 
         // The formatter ends with unix style line endings so make sure we expect that
         // output as well:
-        $expected = $date->format('c') . " CRIT (1) test in test.php on line 1\n";
+        $expected = $date->format('c') . " critical (1) test in test.php on line 1\n";
         $expected .= "[Trace]\n";
         $expected .= "File  : test.php\n";
         $expected .= "Line  : 1\n";
@@ -90,14 +91,14 @@ class ExceptionHandlerTest extends TestCase
             'timestamp' => $date,
             'message' => 'test',
             'priority' => 1,
-            'priorityName' => 'CRIT',
+            'level' => LogLevel::CRITICAL,
             'context' => [
                 'file' => 'test.php',
                 'line' => 1,
             ],
         ];
 
-        $expected = $date->format($dateTimeFormat) . ' CRIT (1) test in test.php on line 1';
+        $expected = $date->format($dateTimeFormat) . ' critical (1) test in test.php on line 1';
 
         $formatter = new ExceptionHandler();
 

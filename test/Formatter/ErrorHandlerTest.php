@@ -15,6 +15,7 @@ use PHPUnit\Framework\TestCase;
 use Zend\Log\Formatter\ErrorHandler;
 use ZendTest\Log\TestAsset\StringObject;
 use ZendTest\Log\TestAsset\NotStringObject;
+use Psr\Log\LogLevel;
 
 class ErrorHandlerTest extends TestCase
 {
@@ -27,7 +28,7 @@ class ErrorHandlerTest extends TestCase
             'timestamp' => $date,
             'message' => 'test',
             'priority' => 1,
-            'priorityName' => 'CRIT',
+            'level' => LogLevel::CRITICAL,
             'context' => [
                 'errno' => 1,
                 'file' => 'test.php',
@@ -38,7 +39,7 @@ class ErrorHandlerTest extends TestCase
         $formatter = new ErrorHandler();
         $output = $formatter->format($event);
 
-        $this->assertEquals($date->format('c') . ' CRIT (1) test (errno 1) in test.php on line 1', $output);
+        $this->assertEquals($date->format('c') . ' critical (1) test (errno 1) in test.php on line 1', $output);
     }
 
     public function testSetDateTimeFormat()
@@ -58,7 +59,7 @@ class ErrorHandlerTest extends TestCase
             'timestamp' => $date,
             'message' => 'test',
             'priority' => 1,
-            'priorityName' => 'CRIT',
+            'level' => LogLevel::CRITICAL,
             'context' => [
                 'errno' => 1,
                 'file' => 'test.php',

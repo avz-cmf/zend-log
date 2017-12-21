@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -28,6 +29,7 @@ use Zend\Mail\Transport\Exception as TransportException;
  */
 class Mail extends AbstractWriter
 {
+
     /**
      * Array of formatted events to include in message body.
      *
@@ -86,7 +88,7 @@ class Mail extends AbstractWriter
                 $this->setSubjectPrependText($mail['subject_prepend_text']);
             }
             $transport = isset($mail['transport']) ? $mail['transport'] : null;
-            $mail      = isset($mail['mail']) ? $mail['mail'] : null;
+            $mail = isset($mail['mail']) ? $mail['mail'] : null;
             if (is_array($mail)) {
                 $mail = MailMessageFactory::getInstance($mail);
             }
@@ -96,10 +98,9 @@ class Mail extends AbstractWriter
         }
 
         // Ensure we have a valid mail message
-        if (! $mail instanceof MailMessage) {
+        if (!$mail instanceof MailMessage) {
             throw new Exception\InvalidArgumentException(sprintf(
-                'Mail parameter of type %s is invalid; must be of type Zend\Mail\Message',
-                (is_object($mail) ? get_class($mail) : gettype($mail))
+                    'Mail parameter of type %s is invalid; must be of type Zend\Mail\Message', (is_object($mail) ? get_class($mail) : gettype($mail))
             ));
         }
         $this->mail = $mail;
@@ -108,10 +109,9 @@ class Mail extends AbstractWriter
         if (null === $transport) {
             $transport = new Transport\Sendmail();
         }
-        if (! $transport instanceof Transport\TransportInterface) {
+        if (!$transport instanceof Transport\TransportInterface) {
             throw new Exception\InvalidArgumentException(sprintf(
-                'Transport parameter of type %s is invalid; must be of type Zend\Mail\Transport\TransportInterface',
-                (is_object($transport) ? get_class($transport) : gettype($transport))
+                    'Transport parameter of type %s is invalid; must be of type Zend\Mail\Transport\TransportInterface', (is_object($transport) ? get_class($transport) : gettype($transport))
             ));
         }
         $this->setTransport($transport);
@@ -141,10 +141,10 @@ class Mail extends AbstractWriter
     protected function doWrite(array $event)
     {
         // Track the number of entries per priority level.
-        if (! isset($this->numEntriesPerPriority[$event['priorityName']])) {
-            $this->numEntriesPerPriority[$event['priorityName']] = 1;
+        if (!isset($this->numEntriesPerPriority[$event['level']])) {
+            $this->numEntriesPerPriority[$event['level']] = 1;
         } else {
-            $this->numEntriesPerPriority[$event['priorityName']]++;
+            $this->numEntriesPerPriority[$event['level']] ++;
         }
 
         // All plaintext events are to use the standard formatter.
@@ -198,11 +198,10 @@ class Mail extends AbstractWriter
             $this->transport->send($this->mail);
         } catch (TransportException\ExceptionInterface $e) {
             trigger_error(
-                "unable to send log entries via email; " .
-                "message = {$e->getMessage()}; " .
-                "code = {$e->getCode()}; " .
-                "exception class = " . get_class($e),
-                E_USER_WARNING
+                    "unable to send log entries via email; " .
+                    "message = {$e->getMessage()}; " .
+                    "code = {$e->getCode()}; " .
+                    "exception class = " . get_class($e), E_USER_WARNING
             );
         }
     }
@@ -223,4 +222,5 @@ class Mail extends AbstractWriter
 
         return implode(', ', $strings);
     }
+
 }

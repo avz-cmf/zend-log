@@ -12,6 +12,7 @@ namespace ZendTest\Log\Processor;
 
 use PHPUnit\Framework\TestCase;
 use Zend\Log\Processor\RequestId;
+use Psr\Log\LogLevel;
 
 class RequestIdTest extends TestCase
 {
@@ -23,7 +24,7 @@ class RequestIdTest extends TestCase
         $event = [
             'timestamp' => '',
             'priority' => 1,
-            'priorityName' => 'ALERT',
+            'level' => LogLevel::ALERT,
             'message' => 'foo',
             'context' => [],
         ];
@@ -46,7 +47,7 @@ class RequestIdTest extends TestCase
         $event = [
             'timestamp' => '',
             'priority' => 1,
-            'priorityName' => 'ALERT',
+            'level' => LogLevel::ALERT,
             'message' => 'foo',
             'context' => [
                 'requestId' => $requestId,

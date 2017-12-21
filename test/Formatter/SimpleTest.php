@@ -14,6 +14,7 @@ use DateTime;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Zend\Log\Formatter\Simple;
+use Psr\Log\LogLevel;
 
 class SimpleTest extends TestCase
 {
@@ -44,7 +45,7 @@ class SimpleTest extends TestCase
             'timestamp' => $date,
             'message' => 'foo',
             'priority' => 42,
-            'priorityName' => 'bar',
+            'level' => 'bar',
             'context' => []
         ];
 
@@ -99,7 +100,7 @@ class SimpleTest extends TestCase
             'timestamp' => new DateTime(),
             'message' => 'Application error',
             'priority' => 2,
-            'priorityName' => 'CRIT',
+            'level' => LogLevel::CRITICAL,
             'context' => [$exception],
         ];
 

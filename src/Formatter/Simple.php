@@ -16,7 +16,7 @@ use Zend\Log\Exception;
 class Simple extends Base
 {
 
-    const DEFAULT_FORMAT = '%timestamp% %priorityName% (%priority%): %message% %context%';
+    const DEFAULT_FORMAT = '%timestamp% %level% (%priority%): %message% %context%';
 
     /**
      * Format specifier for log messages

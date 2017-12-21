@@ -12,6 +12,7 @@ namespace ZendTest\Log\Processor;
 
 use PHPUnit\Framework\TestCase;
 use Zend\Log\Processor\ReferenceId;
+use Psr\Log\LogLevel;
 
 class ReferenceIdTest extends TestCase
 {
@@ -22,7 +23,7 @@ class ReferenceIdTest extends TestCase
         $processedEvent = $processor->process([
             'timestamp' => '',
             'priority' => 1,
-            'priorityName' => 'ALERT',
+            'level' => LogLevel::ALERT,
             'message' => 'foo',
         ]);
 
@@ -40,7 +41,7 @@ class ReferenceIdTest extends TestCase
         $processedEvent = $processor->process([
             'timestamp' => '',
             'priority' => 1,
-            'priorityName' => 'ALERT',
+            'level' => LogLevel::ALERT,
             'message' => 'foo',
             'context' => [
                 'referenceId' => $referenceId,
@@ -74,7 +75,7 @@ class ReferenceIdTest extends TestCase
         $processedEvent = $processor->process([
             'timestamp' => '',
             'priority' => 1,
-            'priorityName' => 'ALERT',
+            'level' => LogLevel::ALERT,
             'message' => 'foo',
         ]);
 

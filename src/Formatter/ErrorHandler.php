@@ -15,7 +15,7 @@ use DateTime;
 class ErrorHandler extends Simple
 {
 
-    const DEFAULT_FORMAT = '%timestamp% %priorityName% (%priority%) %message% (errno %context[errno]%) '
+    const DEFAULT_FORMAT = '%timestamp% %level% (%priority%) %message% (errno %context[errno]%) '
             . 'in %context[file]% on line %context[line]%';
 
     /**

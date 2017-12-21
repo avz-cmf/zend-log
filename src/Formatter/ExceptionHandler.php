@@ -35,7 +35,7 @@ class ExceptionHandler implements FormatterInterface
             $event['timestamp'] = $event['timestamp']->format($this->getDateTimeFormat());
         }
 
-        $output = $event['timestamp'] . ' ' . $event['priorityName'] . ' ('
+        $output = $event['timestamp'] . ' ' . $event['level'] . ' ('
                 . $event['priority'] . ') ' . $event['message'] . ' in '
                 . $event['context']['file'] . ' on line ' . $event['context']['line'];
 

@@ -12,6 +12,7 @@ namespace ZendTest\Log\Processor;
 
 use PHPUnit\Framework\TestCase;
 use Zend\Log\Processor\Backtrace;
+use Psr\Log\LogLevel;
 
 class BacktraceTest extends TestCase
 {
@@ -23,7 +24,7 @@ class BacktraceTest extends TestCase
         $event = [
             'timestamp' => '',
             'priority' => 1,
-            'priorityName' => 'ALERT',
+            'level' => LogLevel::CRITICAL,
             'message' => 'foo',
             'context' => []
         ];

@@ -14,6 +14,7 @@ use DateTime;
 use PHPUnit\Framework\TestCase;
 use Zend\Log\Formatter\Xml as XmlFormatter;
 use ZendTest\Log\TestAsset\SerializableObject;
+use Psr\Log\LogLevel;
 
 class XmlTest extends TestCase
 {
@@ -189,11 +190,11 @@ class XmlTest extends TestCase
             'timestamp' => $d,
             'message' => 'test',
             'priority' => 1,
-            'priorityName' => 'CRIT',
+            'level' => LogLevel::CRITICAL,
             'context' => []
         ];
         $expected = '<logEntry><timestamp>2001-01-01T12:00:00-06:00</timestamp><message>test</message>'
-                . '<priority>1</priority><priorityName>CRIT</priorityName></logEntry>';
+                . '<priority>1</priority><level>critical</level></logEntry>';
         $expected .= "\n" . PHP_EOL;
         $this->assertEquals($expected, $formatter->format($event));
     }
@@ -206,7 +207,7 @@ class XmlTest extends TestCase
             'timestamp' => $d,
             'message' => 'test',
             'priority' => 1,
-            'priorityName' => 'CRIT',
+            'level' => LogLevel::CRITICAL,
             'context' => [
                 'test' => 'one',
                 'bar' => 'foo',
@@ -215,7 +216,7 @@ class XmlTest extends TestCase
         ];
 
         $expected = '<logEntry><timestamp>2001-01-01T12:00:00-06:00</timestamp><message>test</message>'
-                . '<priority>1</priority><priorityName>CRIT</priorityName><context><test>one</test>'
+                . '<priority>1</priority><level>critical</level><context><test>one</test>'
                 . '<bar>foo</bar></context></logEntry>';
         $expected .= "\n" . PHP_EOL;
         $this->assertEquals($expected, $formatter->format($event));
@@ -231,7 +232,7 @@ class XmlTest extends TestCase
             'timestamp' => $d,
             'message' => 'test',
             'priority' => 1,
-            'priorityName' => 'CRIT',
+            'level' => LogLevel::CRITICAL,
             'context' => [
                 'test' => [
                     'one',
@@ -255,7 +256,7 @@ class XmlTest extends TestCase
             ]
         ];
         $expected = '<logEntry><timestamp>2001-01-01T12:00:00-06:00</timestamp><message>test</message>'
-                . '<priority>1</priority><priorityName>CRIT</priorityName><context><test><one/><two><three><four>four</four>'
+                . '<priority>1</priority><level>critical</level><context><test><one/><two><three><four>four</four>'
                 . '</three><five/></two></test><test_null/><test_int>14</test_int><test_object>'
                 . '"Object" of type stdClass does not support __toString() method</test_object><serializable_object>'
                 . 'ZendTest\Log\TestAsset\SerializableObject</serializable_object><test_empty_array/>'
@@ -274,7 +275,7 @@ class XmlTest extends TestCase
             'timestamp' => $d,
             'message' => 'test',
             'priority' => 1,
-            'priorityName' => 'CRIT',
+            'level' => LogLevel::CRITICAL,
             'context' => [
                 'test' => [
                     'one',
@@ -299,7 +300,7 @@ class XmlTest extends TestCase
         ];
 
         // @codingStandardsIgnoreStart
-        $expected = '<logEntry><timestamp>2001-01-01T12:00:00-06:00</timestamp><message>test</message><priority>1</priority><priorityName>CRIT</priorityName><context><test><one/><two><three><four>four&amp;four</four></three><five/></two></test><test_null/><test_int>14</test_int><test_object>"Object" of type stdClass does not support __toString() method</test_object><serializable_object>ZendTest\Log\TestAsset\SerializableObject</serializable_object><test_empty_array/><bar>foo</bar><foobar/></context></logEntry>';
+        $expected = '<logEntry><timestamp>2001-01-01T12:00:00-06:00</timestamp><message>test</message><priority>1</priority><level>critical</level><context><test><one/><two><three><four>four&amp;four</four></three><five/></two></test><test_null/><test_int>14</test_int><test_object>"Object" of type stdClass does not support __toString() method</test_object><serializable_object>ZendTest\Log\TestAsset\SerializableObject</serializable_object><test_empty_array/><bar>foo</bar><foobar/></context></logEntry>';
         $expected .= "\n" . PHP_EOL;
         // @codingStandardsIgnoreEnd
 

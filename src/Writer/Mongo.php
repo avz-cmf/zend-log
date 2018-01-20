@@ -25,6 +25,7 @@ use Zend\Stdlib\ArrayUtils;
  */
 class Mongo extends AbstractWriter
 {
+
     /**
      * MongoCollection instance
      *
@@ -51,7 +52,7 @@ class Mongo extends AbstractWriter
      */
     public function __construct($mongo, $database = null, $collection = null, array $saveOptions = [])
     {
-        if (! extension_loaded('mongo')) {
+        if (!extension_loaded('mongo')) {
             throw new Exception\ExtensionNotLoadedException('Missing ext/mongo');
         }
 
@@ -62,9 +63,9 @@ class Mongo extends AbstractWriter
         if (is_array($mongo)) {
             parent::__construct($mongo);
             $saveOptions = isset($mongo['save_options']) ? $mongo['save_options'] : [];
-            $collection  = isset($mongo['collection']) ? $mongo['collection'] : null;
-            $database    = isset($mongo['database']) ? $mongo['database'] : null;
-            $mongo       = isset($mongo['mongo']) ? $mongo['mongo'] : null;
+            $collection = isset($mongo['collection']) ? $mongo['collection'] : null;
+            $database = isset($mongo['database']) ? $mongo['database'] : null;
+            $mongo = isset($mongo['mongo']) ? $mongo['mongo'] : null;
         }
 
         if (null === $collection) {
@@ -75,15 +76,14 @@ class Mongo extends AbstractWriter
             throw new Exception\InvalidArgumentException('The database parameter cannot be empty');
         }
 
-        if (! ($mongo instanceof MongoClient || $mongo instanceof MongoC)) {
+        if (!($mongo instanceof MongoClient || $mongo instanceof MongoC)) {
             throw new Exception\InvalidArgumentException(sprintf(
-                'Parameter of type %s is invalid; must be MongoClient or Mongo',
-                (is_object($mongo) ? get_class($mongo) : gettype($mongo))
+                    'Parameter of type %s is invalid; must be MongoClient or Mongo', (is_object($mongo) ? get_class($mongo) : gettype($mongo))
             ));
         }
 
         $this->mongoCollection = $mongo->selectCollection($database, $collection);
-        $this->saveOptions     = $saveOptions;
+        $this->saveOptions = $saveOptions;
     }
 
     /**
@@ -94,7 +94,9 @@ class Mongo extends AbstractWriter
      */
     public function setFormatter($formatter)
     {
-        return $this;
+        throw new \RuntimeException(sprintf(
+                'This writer does not support formatting. Formatter:  %s', (is_object($formatter) ? get_class($formatter) : gettype($formatter))
+        ));
     }
 
     /**
@@ -116,4 +118,5 @@ class Mongo extends AbstractWriter
 
         $this->mongoCollection->save($event, $this->saveOptions);
     }
+
 }

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -16,6 +17,7 @@ use Zend\Log\Formatter\Db as DbFormatter;
 
 class Db extends AbstractWriter
 {
+
     /**
      * Db adapter instance
      *
@@ -66,29 +68,29 @@ class Db extends AbstractWriter
             $separator = isset($db['separator']) ? $db['separator'] : null;
             $columnMap = isset($db['column']) ? $db['column'] : null;
             $tableName = isset($db['table']) ? $db['table'] : null;
-            $db        = isset($db['db']) ? $db['db'] : null;
+            $db = isset($db['db']) ? $db['db'] : null;
         }
 
-        if (! $db instanceof Adapter) {
+        if (!$db instanceof Adapter) {
             throw new Exception\InvalidArgumentException('You must pass a valid Zend\Db\Adapter\Adapter');
         }
 
         $tableName = (string) $tableName;
         if ('' === $tableName) {
             throw new Exception\InvalidArgumentException(
-                'You must specify a table name. Either directly in the constructor, or via options'
+            'You must specify a table name. Either directly in the constructor, or via options'
             );
         }
 
-        $this->db        = $db;
+        $this->db = $db;
         $this->tableName = $tableName;
         $this->columnMap = $columnMap;
 
-        if (! empty($separator)) {
+        if (!empty($separator)) {
             $this->separator = $separator;
         }
 
-        if (! $this->hasFormatter()) {
+        if (!$this->hasFormatter()) {
             $this->setFormatter(new DbFormatter());
         }
     }
@@ -139,8 +141,8 @@ class Db extends AbstractWriter
     {
         $keys = array_keys($fields);
         $sql = 'INSERT INTO ' . $this->db->platform->quoteIdentifier($this->tableName) . ' (' .
-            implode(",", array_map([$this->db->platform, 'quoteIdentifier'], $keys)) . ') VALUES (' .
-            implode(",", array_map([$this->db->driver, 'formatParameterName'], $keys)) . ')';
+                implode(",", array_map([$this->db->platform, 'quoteIdentifier'], $keys)) . ') VALUES (' .
+                implode(",", array_map([$this->db->driver, 'formatParameterName'], $keys)) . ')';
 
         return $sql;
     }
@@ -207,4 +209,5 @@ class Db extends AbstractWriter
         }
         return $data;
     }
+
 }

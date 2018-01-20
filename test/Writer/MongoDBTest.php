@@ -21,6 +21,7 @@ use Zend\Log\Writer\MongoDB as MongoDBWriter;
 
 class MongoDBTest extends TestCase
 {
+
     /**
      * @var Manager
      */
@@ -38,7 +39,7 @@ class MongoDBTest extends TestCase
 
     protected function setUp()
     {
-        if (! extension_loaded('mongodb')) {
+        if (!extension_loaded('mongodb')) {
             $this->markTestSkipped('The mongodb PHP extension is not available');
         }
 
@@ -57,10 +58,10 @@ class MongoDBTest extends TestCase
 
     public function testFormattingIsNotSupported()
     {
-        $writer = new MongoDBWriter($this->manager, $this->database, $this->collection);
 
+        $writer = new MongoDBWriter($this->manager, $this->database, $this->collection);
+        $this->expectException(\RuntimeException::class);
         $writer->setFormatter($this->createMock('Zend\Log\Formatter\FormatterInterface'));
-        $this->assertAttributeEmpty('formatter', $writer);
     }
 
     public function testWriteWithDefaultSaveOptions()
@@ -139,10 +140,10 @@ class MongoDBTest extends TestCase
         $writer->write($event);
 
         $cursor = $this->manager->executeQuery($this->database . '.' . $this->collection, new Query([]));
-
         foreach ($cursor as $entry) {
             $this->assertInstanceOf(UTCDatetime::class, $entry->timestamp);
             $this->assertEquals($date, $entry->timestamp->toDateTime());
         }
     }
+
 }

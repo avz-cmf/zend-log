@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -24,6 +25,7 @@ use Zend\Stdlib\ArrayUtils;
  */
 class MongoDB extends AbstractWriter
 {
+
     /**
      * @var Manager
      */
@@ -50,7 +52,7 @@ class MongoDB extends AbstractWriter
      */
     public function __construct($manager, $database = null, $collection = null, $writeConcern = null)
     {
-        if (! extension_loaded('mongodb')) {
+        if (!extension_loaded('mongodb')) {
             throw new Exception\ExtensionNotLoadedException('Missing ext/mongodb');
         }
 
@@ -62,9 +64,9 @@ class MongoDB extends AbstractWriter
         if (is_array($manager)) {
             parent::__construct($manager);
             $writeConcern = isset($manager['write_concern']) ? $manager['write_concern'] : new WriteConcern(1);
-            $collection   = isset($manager['collection']) ? $manager['collection'] : null;
-            $database     = isset($manager['database']) ? $manager['database'] : null;
-            $manager      = isset($manager['manager']) ? $manager['manager'] : null;
+            $collection = isset($manager['collection']) ? $manager['collection'] : null;
+            $database = isset($manager['database']) ? $manager['database'] : null;
+            $manager = isset($manager['manager']) ? $manager['manager'] : null;
         }
 
         if (null === $database) {
@@ -75,10 +77,9 @@ class MongoDB extends AbstractWriter
             $database = sprintf('%s.%s', $database, $collection);
         }
 
-        if (! $manager instanceof Manager) {
+        if (!$manager instanceof Manager) {
             throw new Exception\InvalidArgumentException(sprintf(
-                'Parameter of type %s is invalid; must be MongoDB\Driver\Manager',
-                (is_object($manager) ? get_class($manager) : gettype($manager))
+                    'Parameter of type %s is invalid; must be MongoDB\Driver\Manager', (is_object($manager) ? get_class($manager) : gettype($manager))
             ));
         }
 
@@ -87,14 +88,14 @@ class MongoDB extends AbstractWriter
         }
 
         if (is_array($writeConcern)) {
-            $wstring      = isset($writeConcern['wstring']) ? $writeConcern['wstring'] : 1;
-            $wtimeout     = isset($writeConcern['wtimeout']) ? $writeConcern['wtimeout'] : 0;
-            $journal      = isset($writeConcern['journal']) ? $writeConcern['journal'] : false;
+            $wstring = isset($writeConcern['wstring']) ? $writeConcern['wstring'] : 1;
+            $wtimeout = isset($writeConcern['wtimeout']) ? $writeConcern['wtimeout'] : 0;
+            $journal = isset($writeConcern['journal']) ? $writeConcern['journal'] : false;
             $writeConcern = new WriteConcern($wstring, $wtimeout, $journal);
         }
 
-        $this->manager      = $manager;
-        $this->database     = $database;
+        $this->manager = $manager;
+        $this->database = $database;
         $this->writeConcern = $writeConcern;
     }
 
@@ -106,7 +107,9 @@ class MongoDB extends AbstractWriter
      */
     public function setFormatter($formatter)
     {
-        return $this;
+        throw new \RuntimeException(sprintf(
+                'This writer does not support formatting. Formatter:  %s', (is_object($formatter) ? get_class($formatter) : gettype($formatter))
+        ));
     }
 
     /**
@@ -132,4 +135,5 @@ class MongoDB extends AbstractWriter
 
         $this->manager->executeBulkWrite($this->database, $bulkWrite, $this->writeConcern);
     }
+
 }

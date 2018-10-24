@@ -38,14 +38,24 @@ class ConfigProvider
     public function getDependencyConfig()
     {
         return [
+            'log_writers' => [
+                'factories' => [
+                    Db::class               => DbFactory::class,
+                    'db'                    => DbFactory::class,
+                    'zendlogwriterdb'       => DbFactory::class,
+                    Mongo::class            => MongoFactory::class,
+                    'mongo'                 => MongoFactory::class,
+                    'zendlogwritermongo'    => MongoFactory::class,
+                    MongoDb::class          => MongoDbFactory::class,
+                    'mongodb'               => MongoDbFactory::class,
+                    'zendlogwritermongodb'  => MongoDbFactory::class,
+                    Logger::class           => LoggerServiceFactory::class,
+                ],
+            ],
             'abstract_factories' => [
                 LoggerAbstractServiceFactory::class,
             ],
             'factories' => [
-                Db::class             => DbFactory::class,
-                Mongo::class          => MongoFactory::class,
-                MongoDb::class        => MongoDbFactory::class,
-                Logger::class         => LoggerServiceFactory::class,
                 'LogFilterManager'    => FilterPluginManagerFactory::class,
                 'LogFormatterManager' => FormatterPluginManagerFactory::class,
                 'LogProcessorManager' => ProcessorPluginManagerFactory::class,

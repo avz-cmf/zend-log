@@ -11,8 +11,11 @@ namespace Zend\Log;
 
 use DateTime;
 use ErrorException;
+use InvalidArgumentException;
+use Psr\Log\LogLevel;
 use Traversable;
 use Zend\Log\Processor\ProcessorInterface;
+use Zend\Log\Processor\PsrPlaceholder;
 use Zend\Log\Writer\WriterInterface;
 use Zend\ServiceManager\AbstractPluginManager;
 use Zend\ServiceManager\ServiceManager;
@@ -399,65 +402,101 @@ class Logger implements LoggerInterface
     }
 
     /**
-     * Add a message as a log entry
-     *
-     * @param  int $priority
-     * @param  mixed $message
-     * @param  array|Traversable $extra
-     * @return Logger
-     * @throws Exception\InvalidArgumentException if message can't be cast to string
-     * @throws Exception\InvalidArgumentException if extra can't be iterated over
-     * @throws Exception\RuntimeException if no log writer specified
+     * @param $level
+     * @param $message
+     * @param array $context
+     * @return array
      */
-    public function log($priority, $message, $extra = [])
+    protected function getEvent($level, $message, array $context = array())
     {
-        if (! is_int($priority) || ($priority < 0) || ($priority >= count($this->priorities))) {
-            throw new Exception\InvalidArgumentException(sprintf(
-                '$priority must be an integer >= 0 and < %d; received %s',
-                count($this->priorities),
-                var_export($priority, 1)
+        if (!array_key_exists($level, $this->priorities) && !in_array($level, $this->priorities)) {
+            throw new InvalidArgumentException(sprintf(
+                '$level must be one of PSR-3 log levels; received %s', var_export($level, 1)
             ));
         }
-        if (is_object($message) && ! method_exists($message, '__toString')) {
+
+        $priority = is_int($level) ? $level : array_flip($this->priorities)[$level];
+
+        if (is_object($message) && !method_exists($message, '__toString')) {
             throw new Exception\InvalidArgumentException(
                 '$message must implement magic __toString() method'
             );
         }
 
-        if (! is_array($extra) && ! $extra instanceof Traversable) {
-            throw new Exception\InvalidArgumentException(
-                '$extra must be an array or implement Traversable'
-            );
-        } elseif ($extra instanceof Traversable) {
-            $extra = ArrayUtils::iteratorToArray($extra);
+        if (is_array($message)) {
+            $message = var_export($message, true);
         }
+
+        $timestamp = new DateTime();
+
+        $event = [
+            'timestamp' => $timestamp,
+            'priority' => (int)$priority,
+            'level' => $this->priorities[$priority],
+            'message' => (string)$message,
+            'context' => $context,
+        ];
+
+        $processorPsrPlaceholderExist = false;
+
+        /* @var $processor ProcessorInterface */
+        foreach ($this->processors->toArray() as $processor) {
+            $event = $processor->process($event);
+            $processorPsrPlaceholderExist = is_a($processor, PsrPlaceholder::class) ? true : $processorPsrPlaceholderExist;
+        }
+
+        if (!$processorPsrPlaceholderExist) {
+            $processorPsrPlaceholder = new PsrPlaceholder();
+            $event = $processorPsrPlaceholder->process($event);
+        }
+
+        return $event;
+    }
+
+    /**
+     * Add a message as a log entry
+     *
+     * @param $level
+     * @param $message
+     * @param array $context
+     * @return $this
+     * @throws Exception\InvalidArgumentException if message can't be cast to string
+     * @throws Exception\InvalidArgumentException if extra can't be iterated over
+     * @throws Exception\RuntimeException if no log writer specified
+     */
+    public function log($level, $message, array $context = array())
+    {
+        $event = $this->getEvent($level, $message, $context);
 
         if ($this->writers->count() === 0) {
             throw new Exception\RuntimeException('No log writer specified');
         }
 
-        $timestamp = new DateTime();
-
-        if (is_array($message)) {
-            $message = var_export($message, true);
-        }
-
-        $event = [
-            'timestamp'    => $timestamp,
-            'priority'     => (int) $priority,
-            'priorityName' => $this->priorities[$priority],
-            'message'      => (string) $message,
-            'extra'        => $extra,
-        ];
-
-        /* @var $processor ProcessorInterface */
-        foreach ($this->processors->toArray() as $processor) {
-            $event = $processor->process($event);
-        }
+        $missedWriterEvents = [];
+        $executedWriter = null;
 
         /* @var $writer WriterInterface */
         foreach ($this->writers->toArray() as $writer) {
-            $writer->write($event);
+            try {
+                $writer->write($event);
+                $executedWriter = $writer;
+            } catch (\Throwable $e) {
+                $missedWriterEvents[] = $this->getEvent(
+                    LogLevel::ALERT,
+                    'Writer ' . get_class($writer) . ' failed to write log message',
+                    ['exception' => $e]
+                );
+                continue;
+            }
+        }
+
+        if (!$executedWriter) {
+            throw new Exception\RuntimeException('No log writer was executed');
+        }
+
+        // Process case when a write failed to log
+        foreach ($missedWriterEvents as $event) {
+            $executedWriter->write($event);
         }
 
         return $this;

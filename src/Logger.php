@@ -394,7 +394,7 @@ class Logger implements PsrLoggerInterface
      * @param array $context
      * @return array
      */
-    protected function getEvent($level, $message, array $context = array())
+    protected function createEvent($level, $message, array $context = array())
     {
         if (!array_key_exists($level, $this->priorities) && !in_array($level, $this->priorities)) {
             throw new InvalidArgumentException(sprintf(
@@ -448,22 +448,22 @@ class Logger implements PsrLoggerInterface
      */
     public function log($level, $message, array $context = array())
     {
-        $event = $this->getEvent($level, $message, $context);
+        $event = $this->createEvent($level, $message, $context);
 
         if ($this->writers->count() === 0) {
             throw new Exception\RuntimeException('No log writer specified');
         }
 
         $missedWriterEvents = [];
-        $executedWriter = null;
+        $executedWriters = [];
 
         /* @var $writer WriterInterface */
         foreach ($this->writers->toArray() as $writer) {
             try {
                 $writer->write($event);
-                $executedWriter = $writer;
+                $executedWriters[] = $writer;
             } catch (\Throwable $e) {
-                $missedWriterEvents[] = $this->getEvent(
+                $missedWriterEvents[] = $this->createEvent(
                     LogLevel::ALERT,
                     'Writer ' . get_class($writer) . ' failed to write log message',
                     ['exception' => $e]
@@ -472,13 +472,16 @@ class Logger implements PsrLoggerInterface
             }
         }
 
-        if (!$executedWriter) {
+        if (!$executedWriters) {
             throw new Exception\RuntimeException('No log writer was executed');
         }
 
         // Process case when a write failed to log
-        foreach ($missedWriterEvents as $event) {
-            $executedWriter->write($event);
+        /* @var $executedWriter WriterInterface */
+        foreach ($executedWriters as $executedWriter) {
+            foreach ($missedWriterEvents as $event) {
+                $executedWriter->write($event);
+            }
         }
 
         return $this;

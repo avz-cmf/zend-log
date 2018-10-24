@@ -388,19 +388,25 @@ class Logger implements PsrLoggerInterface
         return $this->processors;
     }
 
-    public function log($level, $message, array $context = array())
+    /**
+     * @param $level
+     * @param $message
+     * @param array $context
+     * @return array
+     */
+    protected function getEvent($level, $message, array $context = array())
     {
-
         if (!array_key_exists($level, $this->priorities) && !in_array($level, $this->priorities)) {
             throw new InvalidArgumentException(sprintf(
-                    '$level must be one of PSR-3 log levels; received %s', var_export($level, 1)
+                '$level must be one of PSR-3 log levels; received %s', var_export($level, 1)
             ));
         }
+
         $priority = is_int($level) ? $level : array_flip($this->priorities)[$level];
 
         if (is_object($message) && !method_exists($message, '__toString')) {
             throw new Exception\InvalidArgumentException(
-            '$message must implement magic __toString() method'
+                '$message must implement magic __toString() method'
             );
         }
 
@@ -408,34 +414,71 @@ class Logger implements PsrLoggerInterface
             $message = var_export($message, true);
         }
 
-        if ($this->writers->count() === 0) {
-            throw new Exception\RuntimeException('No log writer specified');
-        }
-
         $timestamp = new DateTime();
 
         $event = [
             'timestamp' => $timestamp,
-            'priority' => (int) $priority,
+            'priority' => (int)$priority,
             'level' => $this->priorities[$priority],
-            'message' => (string) $message,
+            'message' => (string)$message,
             'context' => $context,
         ];
 
         $processorPsrPlaceholderExist = false;
+
         /* @var $processor ProcessorInterface */
         foreach ($this->processors->toArray() as $processor) {
             $event = $processor->process($event);
             $processorPsrPlaceholderExist = is_a($processor, PsrPlaceholder::class) ? true : $processorPsrPlaceholderExist;
         }
+
         if (!$processorPsrPlaceholderExist) {
             $processorPsrPlaceholder = new PsrPlaceholder();
             $event = $processorPsrPlaceholder->process($event);
         }
 
+        return $event;
+    }
+
+    /**
+     * @param mixed $level
+     * @param string $message
+     * @param array $context
+     * @return $this
+     */
+    public function log($level, $message, array $context = array())
+    {
+        $event = $this->getEvent($level, $message, $context);
+
+        if ($this->writers->count() === 0) {
+            throw new Exception\RuntimeException('No log writer specified');
+        }
+
+        $missedWriterEvents = [];
+        $executedWriter = null;
+
         /* @var $writer WriterInterface */
         foreach ($this->writers->toArray() as $writer) {
-            $writer->write($event);
+            try {
+                $writer->write($event);
+                $executedWriter = $writer;
+            } catch (\Throwable $e) {
+                $missedWriterEvents[] = $this->getEvent(
+                    LogLevel::ALERT,
+                    'Writer ' . get_class($writer) . ' failed to write log message',
+                    ['exception' => $e]
+                );
+                continue;
+            }
+        }
+
+        if (!$executedWriter) {
+            throw new Exception\RuntimeException('No log writer was executed');
+        }
+
+        // Process case when a write failed to log
+        foreach ($missedWriterEvents as $event) {
+            $executedWriter->write($event);
         }
 
         return $this;
@@ -467,7 +510,7 @@ class Logger implements PsrLoggerInterface
                 if (isset($errorPriorityMap[$level])) {
                     $priority = $errorPriorityMap[$level];
                 } else {
-                    $priority = Logger::INFO;
+                    $priority = LogLevel::INFO;
                 }
                 $logger->log($priority, $message, [
                     'errno' => $level,
@@ -513,17 +556,20 @@ class Logger implements PsrLoggerInterface
         register_shutdown_function(function () use ($logger, $errorPriorityMap) {
             $error = error_get_last();
 
-            if (null === $error || !in_array(
-                            $error['type'], [
-                        E_ERROR,
-                        E_PARSE,
-                        E_CORE_ERROR,
-                        E_CORE_WARNING,
-                        E_COMPILE_ERROR,
-                        E_COMPILE_WARNING
-                            ], true
-                    )
-            ) {
+            $isFatalError = !in_array(
+                $error['type'],
+                [
+                    E_ERROR,
+                    E_PARSE,
+                    E_CORE_ERROR,
+                    E_CORE_WARNING,
+                    E_COMPILE_ERROR,
+                    E_COMPILE_WARNING
+                ],
+                true
+            );
+
+            if (null === $error || $isFatalError) {
                 return;
             }
 

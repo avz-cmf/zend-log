@@ -9,6 +9,13 @@
 
 namespace Zend\Log;
 
+use Zend\Log\Writer\Db;
+use Zend\Log\Writer\Factory\DbFactory;
+use Zend\Log\Writer\Factory\MongoDbFactory;
+use Zend\Log\Writer\Factory\MongoFactory;
+use Zend\Log\Writer\Mongo;
+use Zend\Log\Writer\MongoDB;
+
 class ConfigProvider
 {
     /**
@@ -35,6 +42,9 @@ class ConfigProvider
                 LoggerAbstractServiceFactory::class,
             ],
             'factories' => [
+                Db::class             => DbFactory::class,
+                Mongo::class          => MongoFactory::class,
+                MongoDb::class        => MongoDbFactory::class,
                 Logger::class         => LoggerServiceFactory::class,
                 'LogFilterManager'    => FilterPluginManagerFactory::class,
                 'LogFormatterManager' => FormatterPluginManagerFactory::class,

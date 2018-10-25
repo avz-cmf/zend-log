@@ -23,7 +23,7 @@ trait LoggerAwareTrait
     /**
      * Set logger object
      *
-     * @param LoggerInterface $logger
+     * @param PsrLoggerInterface $logger
      * @return mixed
      */
     public function setLogger(PsrLoggerInterface $logger)

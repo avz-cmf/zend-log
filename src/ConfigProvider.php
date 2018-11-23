@@ -27,6 +27,28 @@ class ConfigProvider
     {
         return [
             'dependencies' => $this->getDependencyConfig(),
+            'log_writers' => $this->getLogWriters(),
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    protected function getLogWriters()
+    {
+        return [
+            'factories' => [
+                Db::class               => DbFactory::class,
+                'db'                    => DbFactory::class,
+                'zendlogwriterdb'       => DbFactory::class,
+                Mongo::class            => MongoFactory::class,
+                'mongo'                 => MongoFactory::class,
+                'zendlogwritermongo'    => MongoFactory::class,
+                MongoDb::class          => MongoDbFactory::class,
+                'mongodb'               => MongoDbFactory::class,
+                'zendlogwritermongodb'  => MongoDbFactory::class,
+                Logger::class           => LoggerServiceFactory::class,
+            ],
         ];
     }
 
@@ -35,23 +57,9 @@ class ConfigProvider
      *
      * @return array
      */
-    public function getDependencyConfig()
+    protected function getDependencyConfig()
     {
         return [
-            'log_writers' => [
-                'factories' => [
-                    Db::class               => DbFactory::class,
-                    'db'                    => DbFactory::class,
-                    'zendlogwriterdb'       => DbFactory::class,
-                    Mongo::class            => MongoFactory::class,
-                    'mongo'                 => MongoFactory::class,
-                    'zendlogwritermongo'    => MongoFactory::class,
-                    MongoDb::class          => MongoDbFactory::class,
-                    'mongodb'               => MongoDbFactory::class,
-                    'zendlogwritermongodb'  => MongoDbFactory::class,
-                    Logger::class           => LoggerServiceFactory::class,
-                ],
-            ],
             'abstract_factories' => [
                 LoggerAbstractServiceFactory::class,
             ],

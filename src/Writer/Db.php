@@ -163,14 +163,14 @@ class Db extends AbstractWriter
         $data = [];
         foreach ($event as $name => $value) {
             if (is_array($value)) {
-                foreach ($value as $key => $subvalue) {
-                    if (isset($columnMap[$name][$key])) {
-                        if (is_scalar($subvalue)) {
-                            $data[$columnMap[$name][$key]] = $subvalue;
+                foreach ($value as $key => $subValue) {
+                    if (is_array($columnMap[$name]) && isset($columnMap[$name][$key])) {
+                        if (is_scalar($subValue)) {
+                            $data[$columnMap[$name][$key]] = $subValue;
                             continue;
                         }
 
-                        $data[$columnMap[$name][$key]] = var_export($subvalue, true);
+                        $data[$columnMap[$name][$key]] = var_export($subValue, true);
                     }
                 }
             } elseif (isset($columnMap[$name])) {

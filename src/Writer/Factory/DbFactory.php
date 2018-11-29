@@ -35,11 +35,34 @@ class DbFactory implements FactoryInterface
             throw new InvalidArgumentException("Missing 'db' option");
         }
 
-        $db = $container->get($options['db']);
-        $tableName = isset($options['table']) ? $options['table'] : null;
-        $column = isset($options['column']) ? $options['column'] : null;
-        $separator = isset($options['separator']) ? $options['separator'] : null;
+        $options['db'] = $container->get($options['db']);
+        $options = $this->populateOptions($options, $container, 'filter_manager', 'LogFilterManager');
+        $options = $this->populateOptions($options, $container, 'formatter_manager', 'LogFormatterManager');
 
-        return new Db($db, $tableName, $column, $separator);
+        return new Db($options);
+    }
+
+    /**
+     * Populates the options array with the correct container value.
+     *
+     * @param array $options
+     * @param ContainerInterface $container
+     * @param string $name
+     * @param string $defaultService
+     * @return array
+     */
+    private function populateOptions(array $options, ContainerInterface $container, $name, $defaultService)
+    {
+        if (isset($options[$name]) && is_string($options[$name])) {
+            $options[$name] = $container->get($options[$name]);
+            return $options;
+        }
+
+        if (! isset($options[$name]) && $container->has($defaultService)) {
+            $options[$name] = $container->get($defaultService);
+            return $options;
+        }
+
+        return $options;
     }
 }

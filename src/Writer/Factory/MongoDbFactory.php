@@ -34,11 +34,34 @@ class MongoDbFactory
             throw new InvalidArgumentException("Missing 'manager' option");
         }
 
-        $mongo = $container->get($options['manager']);
-        $database = isset($options['database']) ? $options['database'] : null;
-        $collection = isset($options['collection']) ? $options['collection'] : null;
-        $writeConcern = isset($options['write_concern']) ? $options['write_concern'] : null;
+        $options['manager'] = $container->get($options['manager']);
+        $options = $this->populateOptions($options, $container, 'filter_manager', 'LogFilterManager');
+        $options = $this->populateOptions($options, $container, 'formatter_manager', 'LogFormatterManager');
 
-        return new MongoDB($mongo, $database, $collection, $writeConcern);
+        return new MongoDB($options);
+    }
+
+    /**
+     * Populates the options array with the correct container value.
+     *
+     * @param array $options
+     * @param ContainerInterface $container
+     * @param string $name
+     * @param string $defaultService
+     * @return array
+     */
+    private function populateOptions(array $options, ContainerInterface $container, $name, $defaultService)
+    {
+        if (isset($options[$name]) && is_string($options[$name])) {
+            $options[$name] = $container->get($options[$name]);
+            return $options;
+        }
+
+        if (! isset($options[$name]) && $container->has($defaultService)) {
+            $options[$name] = $container->get($defaultService);
+            return $options;
+        }
+
+        return $options;
     }
 }

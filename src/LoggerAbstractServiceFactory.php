@@ -141,9 +141,5 @@ class LoggerAbstractServiceFactory implements AbstractFactoryInterface
         ) {
             $config['processor_plugin_manager'] = $services->get('LogProcessorManager');
         }
-
-        if (! isset($config['writers'])) {
-            return;
-        }
     }
 }

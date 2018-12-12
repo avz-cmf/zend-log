@@ -9,13 +9,6 @@
 
 namespace Zend\Log;
 
-use Zend\Log\Writer\Db;
-use Zend\Log\Writer\Factory\DbFactory;
-use Zend\Log\Writer\Factory\MongoDbFactory;
-use Zend\Log\Writer\Factory\MongoFactory;
-use Zend\Log\Writer\Mongo;
-use Zend\Log\Writer\MongoDB;
-
 class ConfigProvider
 {
     /**
@@ -27,28 +20,6 @@ class ConfigProvider
     {
         return [
             'dependencies' => $this->getDependencyConfig(),
-            'log_writers' => $this->getLogWriters(),
-        ];
-    }
-
-    /**
-     * @return array
-     */
-    protected function getLogWriters()
-    {
-        return [
-            'factories' => [
-                Db::class               => DbFactory::class,
-                'db'                    => DbFactory::class,
-                'zendlogwriterdb'       => DbFactory::class,
-                Mongo::class            => MongoFactory::class,
-                'mongo'                 => MongoFactory::class,
-                'zendlogwritermongo'    => MongoFactory::class,
-                MongoDb::class          => MongoDbFactory::class,
-                'mongodb'               => MongoDbFactory::class,
-                'zendlogwritermongodb'  => MongoDbFactory::class,
-                Logger::class           => LoggerServiceFactory::class,
-            ],
         ];
     }
 

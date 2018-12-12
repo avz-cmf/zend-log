@@ -9,6 +9,9 @@
 
 namespace Zend\Log;
 
+use Zend\Log\Writer\Factory\DbFactory;
+use Zend\Log\Writer\Factory\MongoDbFactory;
+use Zend\Log\Writer\Factory\MongoFactory;
 use Zend\Log\Writer\Factory\WriterFactory;
 use Zend\ServiceManager\AbstractPluginManager;
 use Zend\ServiceManager\Exception\InvalidServiceException;
@@ -43,12 +46,12 @@ class WriterPluginManager extends AbstractPluginManager
 
     protected $factories = [
         Writer\ChromePhp::class      => WriterFactory::class,
-        Writer\Db::class             => WriterFactory::class,
+        Writer\Db::class             => DbFactory::class,
         Writer\FirePhp::class        => WriterFactory::class,
         Writer\Mail::class           => WriterFactory::class,
         Writer\Mock::class           => WriterFactory::class,
-        Writer\Mongo::class          => WriterFactory::class,
-        Writer\MongoDB::class        => WriterFactory::class,
+        Writer\Mongo::class          => MongoFactory::class,
+        Writer\MongoDB::class        => MongoDbFactory::class,
         Writer\Noop::class           => WriterFactory::class,
         Writer\Psr::class            => WriterFactory::class,
         Writer\Stream::class         => WriterFactory::class,

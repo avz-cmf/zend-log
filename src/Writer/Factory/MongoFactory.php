@@ -34,11 +34,34 @@ class MongoFactory
             throw new InvalidArgumentException("Missing 'mongo' option");
         }
 
-        $mongo = $container->get($options['mongo']);
-        $database = isset($options['database']) ? $options['database'] : null;
-        $collection = isset($options['collection']) ? $options['collection'] : null;
-        $saveOptions = isset($options['save_options']) ? $options['save_options'] : null;
+        $options['mongo'] = $container->get($options['mongo']);
+        $options = $this->populateOptions($options, $container, 'filter_manager', 'LogFilterManager');
+        $options = $this->populateOptions($options, $container, 'formatter_manager', 'LogFormatterManager');
 
-        return new Mongo($mongo, $database, $collection, $saveOptions);
+        return new Mongo($options);
+    }
+
+    /**
+     * Populates the options array with the correct container value.
+     *
+     * @param array $options
+     * @param ContainerInterface $container
+     * @param string $name
+     * @param string $defaultService
+     * @return array
+     */
+    private function populateOptions(array $options, ContainerInterface $container, $name, $defaultService)
+    {
+        if (isset($options[$name]) && is_string($options[$name])) {
+            $options[$name] = $container->get($options[$name]);
+            return $options;
+        }
+
+        if (! isset($options[$name]) && $container->has($defaultService)) {
+            $options[$name] = $container->get($defaultService);
+            return $options;
+        }
+
+        return $options;
     }
 }

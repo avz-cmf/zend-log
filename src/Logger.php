@@ -129,7 +129,7 @@ class Logger implements PsrLoggerInterface
      * - exceptionhandler: if true register this logger as exceptionhandler
      * - errorhandler: if true register this logger as errorhandler
      *
-     * @param  array|Traversable $options
+     * @param array|Traversable $options
      * @return Logger
      * @throws Exception\InvalidArgumentException
      */
@@ -148,7 +148,7 @@ class Logger implements PsrLoggerInterface
 
         if (!is_array($options)) {
             throw new Exception\InvalidArgumentException(
-            'Options must be an array or an object implementing \Traversable '
+                'Options must be an array or an object implementing \Traversable '
             );
         }
 
@@ -260,9 +260,9 @@ class Logger implements PsrLoggerInterface
     /**
      * Add a writer to a logger
      *
-     * @param  string|Writer\WriterInterface $writer
-     * @param  int $priority
-     * @param  array|null $options
+     * @param string|Writer\WriterInterface $writer
+     * @param int $priority
+     * @param array|null $options
      * @return Logger
      * @throws Exception\InvalidArgumentException
      */
@@ -272,7 +272,7 @@ class Logger implements PsrLoggerInterface
             $writer = $this->writerPlugin($writer, $options);
         } elseif (!$writer instanceof Writer\WriterInterface) {
             throw new Exception\InvalidArgumentException(sprintf(
-                    'Writer must implement %s\Writer\WriterInterface; received "%s"', __NAMESPACE__, is_object($writer) ? get_class($writer) : gettype($writer)
+                'Writer must implement %s\Writer\WriterInterface; received "%s"', __NAMESPACE__, is_object($writer) ? get_class($writer) : gettype($writer)
             ));
         }
         $this->writers->insert($writer, $priority);
@@ -293,7 +293,7 @@ class Logger implements PsrLoggerInterface
     /**
      * Set the writers
      *
-     * @param  SplPriorityQueue $writers
+     * @param SplPriorityQueue $writers
      * @return Logger
      * @throws Exception\InvalidArgumentException
      */
@@ -324,7 +324,7 @@ class Logger implements PsrLoggerInterface
     /**
      * Set processor plugin manager
      *
-     * @param  string|ProcessorPluginManager $plugins
+     * @param string|ProcessorPluginManager $plugins
      * @return Logger
      * @throws Exception\InvalidArgumentException
      */
@@ -335,7 +335,7 @@ class Logger implements PsrLoggerInterface
         }
         if (!$plugins instanceof ProcessorPluginManager) {
             throw new Exception\InvalidArgumentException(sprintf(
-                    'processor plugin manager must extend %s\ProcessorPluginManager; received %s', __NAMESPACE__, is_object($plugins) ? get_class($plugins) : gettype($plugins)
+                'processor plugin manager must extend %s\ProcessorPluginManager; received %s', __NAMESPACE__, is_object($plugins) ? get_class($plugins) : gettype($plugins)
             ));
         }
 
@@ -358,9 +358,9 @@ class Logger implements PsrLoggerInterface
     /**
      * Add a processor to a logger
      *
-     * @param  string|Processor\ProcessorInterface $processor
-     * @param  int $priority
-     * @param  array|null $options
+     * @param string|Processor\ProcessorInterface $processor
+     * @param int $priority
+     * @param array|null $options
      * @return Logger
      * @throws Exception\InvalidArgumentException
      */
@@ -370,7 +370,7 @@ class Logger implements PsrLoggerInterface
             $processor = $this->processorPlugin($processor, $options);
         } elseif (!$processor instanceof Processor\ProcessorInterface) {
             throw new Exception\InvalidArgumentException(sprintf(
-                    'Processor must implement Zend\Log\ProcessorInterface; received "%s"', is_object($processor) ? get_class($processor) : gettype($processor)
+                'Processor must implement Zend\Log\ProcessorInterface; received "%s"', is_object($processor) ? get_class($processor) : gettype($processor)
             ));
         }
         $this->processors->insert($processor, $priority);
@@ -451,7 +451,8 @@ class Logger implements PsrLoggerInterface
         $event = $this->createEvent($level, $message, $context);
 
         if ($this->writers->count() === 0) {
-            throw new Exception\RuntimeException('No log writer specified');
+            trigger_error('No log writer was specified.', E_USER_WARNING);
+            return $this;
         }
 
         $missedWriterEvents = [];
@@ -473,7 +474,7 @@ class Logger implements PsrLoggerInterface
         }
 
         if (!$executedWriters) {
-            throw new Exception\RuntimeException('No log writer was executed');
+            trigger_error('No log writer was executed.', E_USER_WARNING);
         }
 
         // Process case when a write failed to log
@@ -491,8 +492,8 @@ class Logger implements PsrLoggerInterface
      * Register logging system as an error handler to log PHP errors
      *
      * @link http://www.php.net/manual/function.set-error-handler.php
-     * @param  Logger $logger
-     * @param  bool   $continueNativeHandler
+     * @param Logger $logger
+     * @param bool $continueNativeHandler
      * @return mixed  Returns result of set_error_handler
      * @throws Exception\InvalidArgumentException if logger is null
      */
@@ -506,24 +507,24 @@ class Logger implements PsrLoggerInterface
         $errorPriorityMap = static::$errorPriorityMap;
 
         $previous = set_error_handler(
-                function ($level, $message, $file, $line) use ($logger, $errorPriorityMap, $continueNativeHandler) {
-            $iniLevel = error_reporting();
+            function ($level, $message, $file, $line) use ($logger, $errorPriorityMap, $continueNativeHandler) {
+                $iniLevel = error_reporting();
 
-            if ($iniLevel & $level) {
-                if (isset($errorPriorityMap[$level])) {
-                    $priority = $errorPriorityMap[$level];
-                } else {
-                    $priority = LogLevel::INFO;
+                if ($iniLevel & $level) {
+                    if (isset($errorPriorityMap[$level])) {
+                        $priority = $errorPriorityMap[$level];
+                    } else {
+                        $priority = LogLevel::INFO;
+                    }
+                    $logger->log($priority, $message, [
+                        'errno' => $level,
+                        'file' => $file,
+                        'line' => $line,
+                    ]);
                 }
-                $logger->log($priority, $message, [
-                    'errno' => $level,
-                    'file' => $file,
-                    'line' => $line,
-                ]);
-            }
 
-            return !$continueNativeHandler;
-        }
+                return !$continueNativeHandler;
+            }
         );
 
         static::$registeredErrorHandler = true;
@@ -544,7 +545,7 @@ class Logger implements PsrLoggerInterface
      * Register a shutdown handler to log fatal errors
      *
      * @link http://www.php.net/manual/function.register-shutdown-function.php
-     * @param  Logger $logger
+     * @param Logger $logger
      * @return bool
      */
     public static function registerFatalErrorShutdownFunction(Logger $logger)
@@ -577,10 +578,10 @@ class Logger implements PsrLoggerInterface
             }
 
             $logger->log(
-                    $errorPriorityMap[$error['type']], $error['message'], [
-                'file' => $error['file'],
-                'line' => $error['line'],
-                    ]
+                $errorPriorityMap[$error['type']], $error['message'], [
+                    'file' => $error['file'],
+                    'line' => $error['line'],
+                ]
             );
         });
 

@@ -480,24 +480,18 @@ class Logger implements PsrLoggerInterface
         }
 
         if (empty($executedWriters)) {
-            $this->stdoutWriter->write($this->createEvent(LogLevel::ALERT, 'No log writer was executed.'));
+            $this->stdoutWrite($this->createEvent(LogLevel::ALERT, 'No log writer was executed.', $missedWriterEvents));
         }
 
         // Process case when a write failed to log
         if (!empty($missedWriterEvents) && !empty($executedWriters)) {
             foreach ($missedWriterEvents as $event) {
-                $sendToStdout = false;
                 foreach ($executedWriters as $executedWriter) {
                     try {
                         $executedWriter->write($event);
                     } catch (\Throwable $e) {
-                        if (!$sendToStdout) {
-                            $this->stdoutWriter->write($event);
-                            $sendToStdout = true;
-                        }
-                        $this->stdoutWriter->write(
-                            $this->createEvent(LogLevel::ALERT, 'Writer ' . get_class($executedWriter) . ' failed to write log message', ['exception' => $e])
-                        );
+                        $this->stdoutWrite($this->createEvent(LogLevel::ALERT, 'Writer ' . get_class($executedWriter) . ' failed to write log message', ['exception' => $e, 'event' => $event]));
+                        continue 1;
                     }
                 }
             }
@@ -671,6 +665,18 @@ class Logger implements PsrLoggerInterface
     {
         restore_exception_handler();
         static::$registeredExceptionHandler = false;
+    }
+
+    /**
+     * @param array $event
+     */
+    private function stdoutWrite(array $event)
+    {
+        try {
+            $this->stdoutWriter->write($event);
+        } catch (\Throwable $e) {
+            // skip any exceptions
+        }
     }
 
 }

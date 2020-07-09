@@ -15,6 +15,7 @@ use ErrorException;
 use Traversable;
 use Zend\Log\Processor\ProcessorInterface;
 use Zend\Log\Processor\PsrPlaceholder;
+use Zend\Log\Writer\Stream;
 use Zend\Log\Writer\WriterInterface;
 use Zend\ServiceManager\AbstractPluginManager;
 use Zend\ServiceManager\ServiceManager;
@@ -122,6 +123,11 @@ class Logger implements PsrLoggerInterface
     protected $processorPlugins;
 
     /**
+     * @var Stream
+     */
+    protected $stdoutWriter;
+
+    /**
      * Constructor
      *
      * Set options for a logger. Accepted options are:
@@ -135,6 +141,7 @@ class Logger implements PsrLoggerInterface
      */
     public function __construct($options = null)
     {
+        $this->stdoutWriter = new Stream('php://stdout');
         $this->writers = new SplPriorityQueue();
         $this->processors = new SplPriorityQueue();
 
@@ -469,19 +476,30 @@ class Logger implements PsrLoggerInterface
                     'Writer ' . get_class($writer) . ' failed to write log message',
                     ['exception' => $e]
                 );
-                continue;
             }
         }
 
-        if (!$executedWriters) {
-            trigger_error('No log writer was executed.', E_USER_WARNING);
+        if (empty($executedWriters)) {
+            $this->stdoutWriter->write($this->createEvent(LogLevel::ALERT, 'No log writer was executed.'));
         }
 
         // Process case when a write failed to log
-        /* @var $executedWriter WriterInterface */
-        foreach ($executedWriters as $executedWriter) {
+        if (!empty($missedWriterEvents) && !empty($executedWriters)) {
             foreach ($missedWriterEvents as $event) {
-                $executedWriter->write($event);
+                $sendToStdout = false;
+                foreach ($executedWriters as $executedWriter) {
+                    try {
+                        $executedWriter->write($event);
+                    } catch (\Throwable $e) {
+                        if (!$sendToStdout) {
+                            $this->stdoutWriter->write($event);
+                            $sendToStdout = true;
+                        }
+                        $this->stdoutWriter->write(
+                            $this->createEvent(LogLevel::ALERT, 'Writer ' . get_class($executedWriter) . ' failed to write log message', ['exception' => $e])
+                        );
+                    }
+                }
             }
         }
 
@@ -653,6 +671,13 @@ class Logger implements PsrLoggerInterface
     {
         restore_exception_handler();
         static::$registeredExceptionHandler = false;
+    }
+
+    protected function createStreamWriter()
+    {
+        $writer = new Stream('php://stdout');
+
+
     }
 
 }

@@ -491,7 +491,7 @@ class Logger implements PsrLoggerInterface
                         $executedWriter->write($event);
                     } catch (\Throwable $e) {
                         $this->stdoutWrite($this->createEvent(LogLevel::ALERT, 'Writer ' . get_class($executedWriter) . ' failed to write log message', ['exception' => $e, 'event' => $event]));
-                        continue 1;
+                        break 2;
                     }
                 }
             }

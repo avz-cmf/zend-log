@@ -673,11 +673,4 @@ class Logger implements PsrLoggerInterface
         static::$registeredExceptionHandler = false;
     }
 
-    protected function createStreamWriter()
-    {
-        $writer = new Stream('php://stdout');
-
-
-    }
-
 }

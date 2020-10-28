@@ -473,64 +473,6 @@ class LoggerTest extends LoggerInterfaceTest
     }
 
     /**
-     * @runInSeparateProcess
-     */
-    public function testRegisterFatalShutdownFunction()
-    {
-        if (version_compare(PHP_VERSION, '7', 'ge')) {
-            $this->markTestSkipped('PHP7: cannot test as code now raises E_ERROR');
-        }
-
-        $writer = new MockWriter;
-        $this->logger->addWriter($writer);
-
-        $result = Logger::registerFatalErrorShutdownFunction($this->logger);
-        $this->assertTrue($result);
-
-        // check for single error handler instance
-        $this->assertFalse(Logger::registerFatalErrorShutdownFunction($this->logger));
-
-        register_shutdown_function(function () use ($writer) {
-            $this->assertEquals(
-                'Call to undefined method ZendTest\Log\LoggerTest::callToNonExistingMethod()', $writer->events[0]['message']
-            );
-        });
-
-        // Temporarily hide errors, because we don't want the fatal error to fail the test
-        @$this->callToNonExistingMethod();
-    }
-
-    /**
-     * @runInSeparateProcess
-     *
-     * @group 6424
-     */
-    public function testRegisterFatalErrorShutdownFunctionHandlesCompileTimeErrors()
-    {
-        if (version_compare(PHP_VERSION, '7', 'ge')) {
-            $this->markTestSkipped('PHP7: cannot test as code now raises E_ERROR');
-        }
-
-        $writer = new MockWriter;
-        $this->logger->addWriter($writer);
-
-        $result = Logger::registerFatalErrorShutdownFunction($this->logger);
-        $this->assertTrue($result);
-
-        // check for single error handler instance
-        $this->assertFalse(Logger::registerFatalErrorShutdownFunction($this->logger));
-
-        register_shutdown_function(function () use ($writer) {
-            $this->assertStringMatchesFormat(
-                'syntax error%A', $writer->events[0]['message']
-            );
-        });
-
-        // Temporarily hide errors, because we don't want the fatal error to fail the test
-        @eval('this::code::is::invalid {}');
-    }
-
-    /**
      * @group ZF2-7238
      */
     public function testCatchExceptionNotValidPriority()

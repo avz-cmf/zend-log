@@ -10,7 +10,7 @@
     ],
     "homepage": "https://github.com/avz-cmf/zend-psr3-log",
     "require": {
-        "php": "^5.6 || ^7.0",
+        "php": "^7.2",
         "psr/log": "^1.0",
         "zendframework/zend-servicemanager": "^2.7.5 || ^3.0.3",
         "zendframework/zend-stdlib": "^2.7 || ^3.0"

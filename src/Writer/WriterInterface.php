@@ -34,7 +34,7 @@ interface WriterInterface
      * Write a log message
      *
      * @param  array $event
-     * @return WriterInterface
+     * @return void
      */
     public function write(array $event);
 

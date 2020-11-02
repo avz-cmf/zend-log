@@ -17,7 +17,7 @@ use Zend\Log\PsrLoggerAdapter;
 use Zend\Log\Writer\Mock as MockWriter;
 
 /**
- * @coversDefaultClass Zend\Log\PsrLoggerAdapter
+ * @coversDefaultClass PsrLoggerAdapter
  * @covers ::<!public>
  */
 class PsrLoggerAdapterTest extends LoggerInterfaceTest
@@ -62,8 +62,7 @@ class PsrLoggerAdapterTest extends LoggerInterfaceTest
      */
     public function getLogs()
     {
-        $this->markTestIncomplete('Undefined variable: prefixMap');
-        return array_map(function ($event) use ($prefixMap) {
+        return array_map(function ($event) {
             $prefix = $event['level'];
             $message = $prefix . ' ' . $event['message'];
             return $message;

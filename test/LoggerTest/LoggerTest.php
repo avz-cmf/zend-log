@@ -13,10 +13,10 @@ namespace ZendTest\Log\LoggerTest;
 use Exception;
 use ErrorException;
 use InvalidArgumentException;
+use PHPUnit\Framework\Error\Warning;
 use Psr\Log\LoggerInterface;
 use stdClass;
 use TypeError;
-use Zend\Log\Exception\RuntimeException;
 use Zend\Log\Logger;
 use Zend\Log\Processor\Backtrace;
 use Zend\Log\Writer\Mock as MockWriter;
@@ -97,9 +97,9 @@ class LoggerTest extends LoggerInterfaceTest
 
     public function testEmptyWriter()
     {
-        $this->markTestIncomplete('Not working');
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('No log writer specified');
+        // expect trigger_error() with E_USER_WARNING
+        $this->expectException(Warning::class);
+        $this->expectExceptionMessage('No log writer was specified.');
         $this->logger->log(LogLevel::INFO, 'test');
     }
 

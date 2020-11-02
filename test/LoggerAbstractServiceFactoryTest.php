@@ -18,6 +18,7 @@ use Zend\Log\Writer\Noop;
 use Zend\Log\Writer\Db as DbWriter;
 use Zend\Log\Writer\Mongo as MongoWriter;
 use Zend\Log\Writer\MongoDB as MongoDBWriter;
+use Zend\Log\WriterPluginManagerFactory;
 use Zend\ServiceManager\Config;
 use Zend\ServiceManager\Exception\ServiceNotFoundException;
 use Zend\ServiceManager\ServiceManager;
@@ -100,13 +101,15 @@ class LoggerAbstractServiceFactoryTest extends TestCase
      */
     public function testRetrievesDatabaseServiceFromServiceManagerWhenEncounteringDbWriter()
     {
-        $this->markTestIncomplete('ServiceNotFoundException: Unable to resolve service "Db\Logger" to a factory');
         $db = $this->getMockBuilder('Zend\Db\Adapter\Adapter')
             ->disableOriginalConstructor()
             ->getMock();
 
         $config = new Config([
             'abstract_factories' => [LoggerAbstractServiceFactory::class],
+            'factories' => [
+                'LogWriterManager'    => WriterPluginManagerFactory::class,
+            ],
             'services' => [
                 'Db\Logger' => $db,
                 'config' => [

@@ -15,7 +15,6 @@ use ErrorException;
 use Traversable;
 use Zend\Log\Processor\ProcessorInterface;
 use Zend\Log\Processor\PsrPlaceholder;
-use Zend\Log\Writer\Stream;
 use Zend\Log\Writer\WriterInterface;
 use Zend\ServiceManager\AbstractPluginManager;
 use Zend\ServiceManager\ServiceManager;
@@ -33,6 +32,20 @@ class Logger implements PsrLoggerInterface
 {
 
     use LoggerTrait;
+
+    /**
+     * Key to specify fallback writer in config.
+     * example:
+     * return [
+     *      Zend\Log\Logger::FALLBACK_WRITER_KEY => [
+     *          'name' => Zend\Log\Writer\Stream::class,
+     *          'options' => [
+     *              'stream' => 'your_file.log'
+     *          ]
+     *      ]
+     *  ]
+     */
+    public const FALLBACK_WRITER_KEY = 'fallbackWriter';
 
     /**
      * Map native PHP errors to priority
@@ -123,9 +136,11 @@ class Logger implements PsrLoggerInterface
     protected $processorPlugins;
 
     /**
-     * @var Stream
+     * Writer which log others writers errors.
+     *
+     * @var WriterInterface|null
      */
-    protected $stdoutWriter;
+    protected $fallbackWriter = null;
 
     /**
      * Constructor
@@ -135,13 +150,11 @@ class Logger implements PsrLoggerInterface
      * - exceptionhandler: if true register this logger as exceptionhandler
      * - errorhandler: if true register this logger as errorhandler
      *
-     * @param array|Traversable $options
-     * @return Logger
+     * @param array|Traversable|null $options
      * @throws Exception\InvalidArgumentException
      */
     public function __construct($options = null)
     {
-        $this->stdoutWriter = new Stream('php://stdout');
         $this->writers = new SplPriorityQueue();
         $this->processors = new SplPriorityQueue();
 
@@ -171,14 +184,25 @@ class Logger implements PsrLoggerInterface
             $this->setProcessorPluginManager($options['processor_plugin_manager']);
         }
 
+        // Fallback writer
+        if (isset($options[self::FALLBACK_WRITER_KEY]) && is_array($options[self::FALLBACK_WRITER_KEY])) {
+            $writer = $options[self::FALLBACK_WRITER_KEY];
+
+            if (!isset($writer['name'])) {
+                throw new Exception\InvalidArgumentException('Options must contain a name for the writer');
+            }
+
+            $this->fallbackWriter = $this->resolveWriter($writer['name'], $writer['options'] ?? null);
+        }
+
         if (isset($options['writers']) && is_array($options['writers'])) {
             foreach ($options['writers'] as $writer) {
                 if (!isset($writer['name'])) {
                     throw new Exception\InvalidArgumentException('Options must contain a name for the writer');
                 }
 
-                $priority = (isset($writer['priority'])) ? $writer['priority'] : null;
-                $writerOptions = (isset($writer['options'])) ? $writer['options'] : null;
+                $priority = $writer['priority'] ?? null;
+                $writerOptions = $writer['options'] ?? null;
 
                 $this->addWriter($writer['name'], $priority, $writerOptions);
             }
@@ -275,16 +299,30 @@ class Logger implements PsrLoggerInterface
      */
     public function addWriter($writer, $priority = 1, array $options = null)
     {
+        $writer = $this->resolveWriter($writer, $options);
+        $this->writers->insert($writer, $priority);
+
+        return $this;
+    }
+
+    /**
+     * @param string|Writer\WriterInterface $writer
+     * @param array|null $options
+     * @return WriterInterface
+     */
+    protected function resolveWriter($writer, array $options = null): WriterInterface
+    {
         if (is_string($writer)) {
-            $writer = $this->writerPlugin($writer, $options);
-        } elseif (!$writer instanceof Writer\WriterInterface) {
+            return $this->writerPlugin($writer, $options);
+        }
+
+        if (!$writer instanceof Writer\WriterInterface) {
             throw new Exception\InvalidArgumentException(sprintf(
                 'Writer must implement %s\Writer\WriterInterface; received "%s"', __NAMESPACE__, is_object($writer) ? get_class($writer) : gettype($writer)
             ));
         }
-        $this->writers->insert($writer, $priority);
 
-        return $this;
+        return $writer;
     }
 
     /**
@@ -462,42 +500,71 @@ class Logger implements PsrLoggerInterface
             return $this;
         }
 
-        $missedWriterEvents = [];
-        $executedWriters = [];
+        $failedWriters = [];
 
         /* @var $writer WriterInterface */
         foreach ($this->writers->toArray() as $writer) {
             try {
                 $writer->write($event);
-                $executedWriters[] = $writer;
             } catch (\Throwable $e) {
-                $missedWriterEvents[] = $this->createEvent(
-                    LogLevel::ALERT,
-                    'Writer ' . get_class($writer) . ' failed to write log message',
-                    ['exception' => $e]
-                );
+                $failedWriters[] = [
+                    'writer' => $writer,
+                    'failedEvent' => $event,
+                    'exception' => $e
+                ];
             }
-        }
-
-        if (empty($executedWriters)) {
-            $this->stdoutWrite($this->createEvent(LogLevel::ALERT, 'No log writer was executed.', $missedWriterEvents));
         }
 
         // Process case when a write failed to log
-        if (!empty($missedWriterEvents) && !empty($executedWriters)) {
-            foreach ($missedWriterEvents as $event) {
-                foreach ($executedWriters as $executedWriter) {
-                    try {
-                        $executedWriter->write($event);
-                    } catch (\Throwable $e) {
-                        $this->stdoutWrite($this->createEvent(LogLevel::ALERT, 'Writer ' . get_class($executedWriter) . ' failed to write log message', ['exception' => $e, 'event' => $event]));
-                        break 2;
-                    }
-                }
-            }
-        }
+        $this->processFailedWriters($failedWriters);
 
         return $this;
+    }
+
+    /**
+     * Logging messages about failed writers
+     *
+     * @param array $failedWriters
+     */
+    protected function processFailedWriters(array $failedWriters): void
+    {
+        foreach ($failedWriters as $writer) {
+            $message = 'Writer ' . get_class($writer['writer']) . ' failed to write log message.';
+            if (isset($this->fallbackWriter)) {
+                try {
+                    $event = $this->createEvent(
+                        LogLevel::ALERT,
+                        $message,
+                        [
+                            'exception' => $writer['exception'],
+                            'failedEvent' => $writer['failedEvent']
+                        ]
+                    );
+                    $this->fallbackWriter->write($event);
+                } catch (\Throwable $e) {
+                    // Logging original message
+                    $this->logError($this->failedWriterEventToString($writer));
+                    // Logging fallback writer fail
+                    $this->logError('Fallback writer failed to write log message. ' . (string)$e);
+                }
+            } else {
+                $this->logError($this->failedWriterEventToString($writer));
+            }
+        }
+    }
+
+    /**
+     * Convert failed writer event to string to log through error_log
+     *
+     * @param array $failedWriterEvent
+     * @return string
+     */
+    protected function failedWriterEventToString(array $failedWriterEvent)
+    {
+        $message = 'Writer ' . get_class($failedWriterEvent['writer']) . ' failed to write log message.';
+        $exception = (string)$failedWriterEvent['exception'];
+        $failedEvent = print_r($failedWriterEvent['failedEvent'], true);
+        return $message . ' ' . $exception . ' ' . $failedEvent;
     }
 
     /**
@@ -668,15 +735,11 @@ class Logger implements PsrLoggerInterface
     }
 
     /**
-     * @param array $event
+     * @param string $error
      */
-    private function stdoutWrite(array $event)
+    protected function logError(string $error)
     {
-        try {
-            $this->stdoutWriter->write($event);
-        } catch (\Throwable $e) {
-            // skip any exceptions
-        }
+        error_log($error);
     }
 
 }

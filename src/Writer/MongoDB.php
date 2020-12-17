@@ -103,9 +103,10 @@ class MongoDB extends AbstractWriter
      * This writer does not support formatting.
      *
      * @param string|FormatterInterface $formatter
-     * @return WriterInterface
+     * @param array|null $options
+     * @return void
      */
-    public function setFormatter($formatter)
+    public function setFormatter($formatter, array $options = null)
     {
         throw new \RuntimeException(sprintf(
                 'This writer does not support formatting. Formatter:  %s', (is_object($formatter) ? get_class($formatter) : gettype($formatter))
